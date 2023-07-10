@@ -4,6 +4,8 @@ use bevy::{
     DefaultPlugins,
 };
 
+pub mod input_manager;
+
 /// Initial width of the game window
 const WINDOW_WIDTH: f32 = 800.;
 /// Initial height of the game window
