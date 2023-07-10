@@ -1,4 +1,8 @@
-use bevy::{sprite::TextureAtlas, prelude::*, asset::{LoadState, HandleId}};
+use bevy::{
+    asset::{HandleId, LoadState},
+    prelude::*,
+    sprite::TextureAtlas,
+};
 
 use crate::GameState;
 
@@ -29,11 +33,7 @@ fn init_collection(
     let characters = texture_atlases.add(characters_atlas);
     handles.push(characters_img.id());
 
-    commands.insert_resource(
-        SpriteCollection {
-            characters,
-        }
-    );
+    commands.insert_resource(SpriteCollection { characters });
     commands.insert_resource(handles);
 }
 
@@ -50,12 +50,13 @@ fn check_assets_ready(
     }
 }
 
-
 pub struct SpritesPlugin;
 
 impl Plugin for SpritesPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, init_collection)
-            .add_systems(Update, check_assets_ready.run_if(in_state(GameState::AssetsLoading)));
+        app.add_systems(Startup, init_collection).add_systems(
+            Update,
+            check_assets_ready.run_if(in_state(GameState::AssetsLoading)),
+        );
     }
 }

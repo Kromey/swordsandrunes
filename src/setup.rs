@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{GameState, sprites::SpriteCollection};
+use crate::{sprites::SpriteCollection, GameState};
 
 #[derive(Debug, Default, Clone, Copy, Component)]
 pub struct Player;
@@ -8,14 +8,8 @@ pub struct Player;
 #[derive(Debug, Default, Clone, Copy, Component)]
 pub struct MainCamera;
 
-fn setup_camera(
-    mut commands: Commands,
-    mut next_state: ResMut<NextState<GameState>>,
-) {
-    commands.spawn((
-        Camera2dBundle::default(),
-        MainCamera,
-    ));
+fn setup_camera(mut commands: Commands, mut next_state: ResMut<NextState<GameState>>) {
+    commands.spawn((Camera2dBundle::default(), MainCamera));
 
     next_state.set(GameState::MainMenu);
 }
@@ -28,7 +22,10 @@ fn setup_game(
     commands.spawn((
         SpriteSheetBundle {
             texture_atlas: sprite_collection.characters.clone(),
-            sprite: TextureAtlasSprite { index: 378, ..Default::default() },
+            sprite: TextureAtlasSprite {
+                index: 378,
+                ..Default::default()
+            },
             transform: Transform::from_translation(Vec3::ZERO),
             ..Default::default()
         },

@@ -28,9 +28,11 @@ pub enum Action {
 impl Action {
     /// Returns true if this Action should only respond to `just_pressed` events
     const fn is_toggle(&self) -> bool {
-        use Action::*;
+        // use Action::*;
 
-        matches!(self, ToggleDebug)
+        // matches!(self, ToggleDebug)
+
+        true
     }
 }
 

@@ -5,6 +5,7 @@ use bevy::{
 };
 
 pub mod input_manager;
+pub mod movement;
 pub mod setup;
 pub mod sprites;
 
@@ -23,17 +24,14 @@ pub enum GameState {
     Running,
 }
 
-fn state_manager(
-    state: Res<State<GameState>>,
-    mut next_state: ResMut<NextState<GameState>>,
-) {
+fn state_manager(state: Res<State<GameState>>, mut next_state: ResMut<NextState<GameState>>) {
     // FIXME: Temporary system to "skip" states we're not utilizing yet
     #[allow(clippy::single_match)]
     match **state {
         // GameState::Starting => next_state.set(GameState::MainMenu),
         GameState::MainMenu => next_state.set(GameState::AssetsLoading),
         // GameState::Setup => next_state.set(GameState::Running),
-        _ => {},
+        _ => {}
     };
 
     if let Some(next) = next_state.0 {
@@ -57,6 +55,8 @@ pub fn run() {
         // Begin game configuration
         .add_state::<GameState>()
         .add_systems(Update, state_manager)
+        .add_plugins(input_manager::InputManagerPlugin)
+        .add_plugins(movement::MovementPlugin)
         .add_plugins(setup::SetupPlugin)
         .add_plugins(sprites::SpritesPlugin)
         .run();

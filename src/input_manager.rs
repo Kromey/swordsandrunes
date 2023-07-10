@@ -13,14 +13,11 @@ pub struct InputManager;
 
 /// Plugin to add the input handling system into the game
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
-pub struct InputManagerPlugin<MainCamera: Component>(std::marker::PhantomData<MainCamera>);
+pub struct InputManagerPlugin;
 
-impl<MainCamera: Component> Plugin for InputManagerPlugin<MainCamera> {
+impl Plugin for InputManagerPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Actions>()
-            .add_systems(
-                Update,
-                keyboard::update_actions.in_set(InputManager),
-            );
+            .add_systems(Update, keyboard::update_actions.in_set(InputManager));
     }
 }
