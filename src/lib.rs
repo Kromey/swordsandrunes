@@ -1,15 +1,43 @@
 use bevy::{
-    prelude::{App, ClearColor, Color, PluginGroup, Update},
+    prelude::*,
     window::{Window, WindowPlugin, WindowResolution},
     DefaultPlugins,
 };
 
 pub mod input_manager;
+pub mod sprites;
 
 /// Initial width of the game window
 const WINDOW_WIDTH: f32 = 800.;
 /// Initial height of the game window
 const WINDOW_HEIGHT: f32 = 600.;
+
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash, States)]
+pub enum GameState {
+    #[default]
+    Starting,
+    MainMenu,
+    AssetsLoading,
+    Setup,
+    Running,
+}
+
+fn state_manager(
+    state: Res<State<GameState>>,
+    mut next_state: ResMut<NextState<GameState>>,
+) {
+    // FIXME: Temporary system to "skip" states we're not utilizing yet
+    match **state {
+        GameState::Starting => next_state.set(GameState::MainMenu),
+        GameState::MainMenu => next_state.set(GameState::AssetsLoading),
+        GameState::Setup => next_state.set(GameState::Running),
+        _ => {},
+    };
+
+    if let Some(next) = next_state.0 {
+        println!("Switching from {state:?} to state {next:?}");
+    }
+}
 
 /// Run the game
 pub fn run() {
@@ -24,5 +52,9 @@ pub fn run() {
             ..Default::default()
         }))
         .add_systems(Update, bevy::window::close_on_esc)
+        // Begin game configuration
+        .add_state::<GameState>()
+        .add_systems(Update, state_manager)
+        .add_plugins(sprites::SpritesPlugin)
         .run();
 }
