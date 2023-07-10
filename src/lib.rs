@@ -5,6 +5,7 @@ use bevy::{
 };
 
 pub mod input_manager;
+pub mod setup;
 pub mod sprites;
 
 /// Initial width of the game window
@@ -27,10 +28,11 @@ fn state_manager(
     mut next_state: ResMut<NextState<GameState>>,
 ) {
     // FIXME: Temporary system to "skip" states we're not utilizing yet
+    #[allow(clippy::single_match)]
     match **state {
-        GameState::Starting => next_state.set(GameState::MainMenu),
+        // GameState::Starting => next_state.set(GameState::MainMenu),
         GameState::MainMenu => next_state.set(GameState::AssetsLoading),
-        GameState::Setup => next_state.set(GameState::Running),
+        // GameState::Setup => next_state.set(GameState::Running),
         _ => {},
     };
 
@@ -55,6 +57,7 @@ pub fn run() {
         // Begin game configuration
         .add_state::<GameState>()
         .add_systems(Update, state_manager)
+        .add_plugins(setup::SetupPlugin)
         .add_plugins(sprites::SpritesPlugin)
         .run();
 }

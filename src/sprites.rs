@@ -4,7 +4,7 @@ use crate::GameState;
 
 #[derive(Debug, Clone, Resource)]
 pub struct SpriteCollection {
-    pub characters: TextureAtlas,
+    pub characters: Handle<TextureAtlas>,
 }
 
 #[derive(Debug, Default, Clone, Resource, Deref, DerefMut)]
@@ -18,7 +18,7 @@ fn init_collection(
     let mut handles = SpriteHandles::default();
 
     let characters_img = server.load("characters.png");
-    let characters = TextureAtlas::from_grid(
+    let characters_atlas = TextureAtlas::from_grid(
         characters_img.clone(),
         Vec2::splat(16.),
         54,
@@ -26,7 +26,7 @@ fn init_collection(
         Some(Vec2::splat(1.)),
         None,
     );
-    texture_atlases.add(characters.clone());
+    let characters = texture_atlases.add(characters_atlas);
     handles.push(characters_img.id());
 
     commands.insert_resource(
