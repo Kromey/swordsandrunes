@@ -5,14 +5,16 @@ use bevy::{
 };
 
 pub mod input_manager;
+pub mod map;
 pub mod movement;
 pub mod setup;
 pub mod sprites;
+pub mod tiles;
 
 /// Initial width of the game window
-const WINDOW_WIDTH: f32 = 800.;
+const WINDOW_WIDTH: f32 = 1024.;
 /// Initial height of the game window
-const WINDOW_HEIGHT: f32 = 600.;
+const WINDOW_HEIGHT: f32 = 768.;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash, States)]
 pub enum GameState {

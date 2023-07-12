@@ -4,11 +4,12 @@ use bevy::{
     sprite::TextureAtlas,
 };
 
-use crate::GameState;
+use crate::{GameState, tiles::TILE_SIZE};
 
 #[derive(Debug, Clone, Resource)]
 pub struct SpriteCollection {
     pub characters: Handle<TextureAtlas>,
+    pub objects: Handle<TextureAtlas>,
 }
 
 #[derive(Debug, Default, Clone, Resource, Deref, DerefMut)]
@@ -24,7 +25,7 @@ fn init_collection(
     let characters_img = server.load("characters.png");
     let characters_atlas = TextureAtlas::from_grid(
         characters_img.clone(),
-        Vec2::splat(16.),
+        Vec2::splat(TILE_SIZE as f32),
         54,
         12,
         Some(Vec2::splat(1.)),
@@ -33,7 +34,19 @@ fn init_collection(
     let characters = texture_atlases.add(characters_atlas);
     handles.push(characters_img.id());
 
-    commands.insert_resource(SpriteCollection { characters });
+    let objects_img = server.load("objects.png");
+    let objects_atlas = TextureAtlas::from_grid(
+        objects_img.clone(),
+        Vec2::splat(TILE_SIZE as f32),
+        57,
+        31,
+        Some(Vec2::splat(1.)),
+        None,
+    );
+    let objects = texture_atlases.add(objects_atlas);
+    handles.push(objects_img.id());
+
+    commands.insert_resource(SpriteCollection { characters, objects });
     commands.insert_resource(handles);
 }
 
