@@ -12,6 +12,10 @@ pub struct TilePos {
 }
 
 impl TilePos {
+    pub fn new(x: u32, y: u32) -> Self {
+        Self { x, y }
+    }
+
     pub fn from_index(idx: usize, size: MapSize) -> Self {
         Self {
             x: idx as u32 % size.width,
@@ -49,6 +53,40 @@ impl From<Vec2> for TilePos {
             x: (value.x / TILE_SIZE as f32).round() as u32,
             y: (value.y / TILE_SIZE as f32).round() as u32,
         }
+    }
+}
+
+impl std::ops::Add for TilePos {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Self {
+            x: self.x + rhs.x,
+            y: self.y + rhs.y,
+        }
+    }
+}
+
+impl std::ops::AddAssign for TilePos {
+    fn add_assign(&mut self, rhs: Self) {
+        *self = *self + rhs;
+    }
+}
+
+impl std::ops::Sub for TilePos {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Self {
+            x: self.x - rhs.x,
+            y: self.y - rhs.y,
+        }
+    }
+}
+
+impl std::ops::SubAssign for TilePos {
+    fn sub_assign(&mut self, rhs: Self) {
+        *self = *self - rhs;
     }
 }
 

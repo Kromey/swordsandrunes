@@ -42,12 +42,26 @@ fn setup_game(
         SpriteSheetBundle {
             texture_atlas: sprite_collection.characters.clone(),
             sprite: TextureAtlasSprite {
+                index: 162,
+                ..Default::default()
+            },
+            transform: (size.center_tile() - TilePos::new(5, 0)).as_transform(1.0),
+            ..Default::default()
+        },
+        Name::new("Orc"),
+    ));
+
+    commands.spawn((
+        SpriteSheetBundle {
+            texture_atlas: sprite_collection.characters.clone(),
+            sprite: TextureAtlasSprite {
                 index: 378,
                 ..Default::default()
             },
             transform: size.center_tile().as_transform(1.0),
             ..Default::default()
         },
+        Name::new("The Player"),
         Player,
     ));
 
