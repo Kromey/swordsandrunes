@@ -5,6 +5,8 @@ pub use pos::TilePos;
 
 /// Dimensions of a tile edge; tiles are assumed to be square
 pub const TILE_SIZE: u32 = 16;
+/// Dimensions of a tile edge as a f32 value
+pub const TILE_SIZE_F32: f32 = TILE_SIZE as f32;
 
 /// Marker component to identify tiles
 #[derive(Debug, Default, Clone, Copy, Component)]

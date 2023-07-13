@@ -3,10 +3,15 @@ use bevy::prelude::*;
 use crate::{
     input_manager::{Actions, InputManager},
     setup::Player,
-    GameState,
+    GameState, tiles::{TILE_SIZE_F32, TilePos, Tile, Walkable}, map::Map,
 };
 
-pub fn movement_system(actions: Res<Actions>, mut player: Query<&mut Transform, With<Player>>) {
+pub fn movement_system(
+    actions: Res<Actions>,
+    mut player: Query<&mut Transform, With<Player>>,
+    tile_qry: Query<&Walkable, With<Tile>>,
+    map: Res<Map>,
+) {
     let mut delta = Vec2::ZERO;
 
     if actions.perform(crate::input_manager::Action::WalkNorth) {
@@ -23,8 +28,19 @@ pub fn movement_system(actions: Res<Actions>, mut player: Query<&mut Transform, 
     }
 
     if delta.length_squared() > 0.1 {
+        delta = delta.round() * TILE_SIZE_F32;
+    
         if let Ok(mut transform) = player.get_single_mut() {
-            transform.translation += (delta.round() * 16.0).extend(0.0)
+            let dest = TilePos::from(transform.translation.truncate() + delta);
+
+            if let Some(tile) = map.get(dest) {
+                if let Ok(walkable) = tile_qry.get(tile) {
+                    if **walkable {
+                        transform.translation = dest.as_vec().extend(transform.translation.z);
+                    }
+                }
+            }
+
         }
     }
 }

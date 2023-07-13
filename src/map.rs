@@ -28,6 +28,10 @@ impl MapSize {
     pub fn center_tile(&self) -> TilePos {
         TilePos::from(self.center())
     }
+
+    pub fn in_bounds(&self, pos: TilePos) -> bool {
+        pos.x < self.width && pos.y < self.height
+    }
 }
 
 impl Default for MapSize {
@@ -47,8 +51,8 @@ pub struct Map {
 
 impl Map {
     pub fn get(&self, pos: TilePos) -> Option<Entity> {
-        let idx = pos.as_index(self.size);
-        if idx < self.tiles.len() {
+        if self.size.in_bounds(pos) {
+            let idx = pos.as_index(self.size);
             Some(self.tiles[idx])
         } else {
             None
