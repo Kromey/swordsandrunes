@@ -4,7 +4,7 @@ mod pos;
 pub use pos::TilePos;
 
 /// Dimensions of a tile edge; tiles are assumed to be square
-pub const TILE_SIZE: u32 = 16;
+pub const TILE_SIZE: u32 = 32;
 /// Dimensions of a tile edge as a f32 value
 pub const TILE_SIZE_F32: f32 = TILE_SIZE as f32;
 
@@ -31,12 +31,11 @@ pub struct TileBundle {
     /// The tile's name
     pub name: Name,
     
-    // These components are from SpriteSheetBundle; copied here since Bevy has done away with bundle flattening
+    // These components are from SpriteBundle; copied here since Bevy has done away with bundle flattening
 
-    /// The specific sprite from the texture atlas to be drawn, defaulting to the sprite at index 0.
-    pub sprite: TextureAtlasSprite,
-    /// A handle to the texture atlas that holds the sprite images
-    pub texture_atlas: Handle<TextureAtlas>,
+    pub sprite: Sprite,
+    /// A handle to the sprite's image
+    pub texture: Handle<Image>,
     /// Data pertaining to how the sprite is drawn on the screen
     pub transform: Transform,
     pub global_transform: GlobalTransform,
@@ -47,30 +46,28 @@ pub struct TileBundle {
 }
 
 impl TileBundle {
-    pub fn floor(x: u32, y: u32, texture_atlas: Handle<TextureAtlas>) -> Self {
+    pub fn floor(x: u32, y: u32, texture: Handle<Image>) -> Self {
         let pos = TilePos { x, y };
         Self {
             walkable: Walkable(true),
             transparent: Transparent(true),
             name: Name::new("Stone Floor"),
 
-            sprite: TextureAtlasSprite::new(7),
-            texture_atlas,
+            texture,
             transform: pos.as_transform(0.0),
 
             ..Default::default()
         }
     }
 
-    pub fn wall(x: u32, y: u32, texture_atlas: Handle<TextureAtlas>) -> Self {
+    pub fn wall(x: u32, y: u32, texture: Handle<Image>) -> Self {
         let pos = TilePos { x, y };
         Self {
             walkable: Walkable(false),
             transparent: Transparent(false),
             name: Name::new("Stone Wall"),
 
-            sprite: TextureAtlasSprite::new(880),
-            texture_atlas,
+            texture,
             transform: pos.as_transform(0.0),
 
             ..Default::default()

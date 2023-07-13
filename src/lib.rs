@@ -8,7 +8,6 @@ pub mod input_manager;
 pub mod map;
 pub mod movement;
 pub mod setup;
-pub mod sprites;
 pub mod tiles;
 
 /// Initial width of the game window
@@ -32,6 +31,7 @@ fn state_manager(state: Res<State<GameState>>, mut next_state: ResMut<NextState<
     match **state {
         // GameState::Starting => next_state.set(GameState::MainMenu),
         GameState::MainMenu => next_state.set(GameState::AssetsLoading),
+        GameState::AssetsLoading => next_state.set(GameState::Setup), // FIXME: Load assets at startup
         // GameState::Setup => next_state.set(GameState::Running),
         _ => {}
     };
@@ -60,6 +60,5 @@ pub fn run() {
         .add_plugins(input_manager::InputManagerPlugin)
         .add_plugins(movement::MovementPlugin)
         .add_plugins(setup::SetupPlugin)
-        .add_plugins(sprites::SpritesPlugin)
         .run();
 }
