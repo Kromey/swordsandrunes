@@ -23,6 +23,10 @@ impl TilePos {
         }
     }
 
+    pub fn as_index(&self, size: MapSize) -> usize {
+        (self.y * size.width + self.x) as usize
+    }
+
     pub fn as_vec(&self) -> Vec2 {
         Vec2 {
             x: (self.x * TILE_SIZE) as f32,

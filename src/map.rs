@@ -44,3 +44,14 @@ pub struct Map {
     pub tiles: Vec<Entity>,
     pub size: MapSize,
 }
+
+impl Map {
+    pub fn get(&self, pos: TilePos) -> Option<Entity> {
+        let idx = pos.as_index(self.size);
+        if idx < self.tiles.len() {
+            Some(self.tiles[idx])
+        } else {
+            None
+        }
+    }
+}

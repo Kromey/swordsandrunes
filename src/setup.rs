@@ -29,10 +29,18 @@ fn setup_game(
         commands.spawn(TileBundle::floor(pos.x, pos.y, sprite_collection.objects.clone())).id()
     }).collect();
 
-    commands.insert_resource(Map {
-        tiles,
-        size,
-    });
+    let map = Map { tiles, size, };
+
+    let walls = TileBundle::wall(0, 0, sprite_collection.objects.clone());
+    for i in 30..33 {
+        let pos = TilePos::new(i, 22);
+        if let Some(tile) = map.get(pos) {
+            println!("{pos:?} => {} => {:?}", pos.as_index(size), TilePos::from_index(pos.as_index(size), size));
+            commands.entity(tile).insert((walls.walkable, walls.transparent, walls.name.clone(), walls.sprite.clone()));
+        }
+    }
+
+    commands.insert_resource(map);
 
     if let Ok(mut transform) = camera.get_single_mut() {
         transform.translation = size.center().extend(transform.translation.z);
