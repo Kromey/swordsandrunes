@@ -26,6 +26,8 @@ pub struct TileBundle {
     pub walkable: Walkable,
     /// Whether or not a tile is transparent to light/vision
     pub transparent: Transparent,
+    /// The tile's name
+    pub name: Name,
     
     // These components are from SpriteSheetBundle; copied here since Bevy has done away with bundle flattening
 
@@ -48,6 +50,7 @@ impl TileBundle {
         Self {
             walkable: Walkable(true),
             transparent: Transparent(true),
+            name: Name::new("Stone Floor"),
 
             sprite: TextureAtlasSprite::new(7),
             texture_atlas,
@@ -62,6 +65,7 @@ impl TileBundle {
         Self {
             walkable: Walkable(false),
             transparent: Transparent(false),
+            name: Name::new("Stone Wall"),
 
             sprite: TextureAtlasSprite::new(880),
             texture_atlas,
