@@ -23,6 +23,13 @@ impl RectangularRoom {
         (self.start + self.end) / 2
     }
 
+    pub fn intersects(&self, other: Self) -> bool {
+        self.start.x <= other.end.x &&
+            self.end.x >= other.start.x &&
+            self.start.y <= other.end.y &&
+            self.end.y >= other.start.y
+    }
+
     pub fn iter(&self) -> impl Iterator<Item = TilePos> {
         // Iterate across the _floor_ tiles within this room
         ((self.start.x + 1)..self.end.x)
