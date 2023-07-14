@@ -2,7 +2,7 @@ use itertools::Itertools;
 
 use crate::tiles::TilePos;
 
-
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub struct RectangularRoom {
     start: TilePos,
     end: TilePos,
@@ -17,6 +17,10 @@ impl RectangularRoom {
                 y: from.y + height - 1, // Ditto
             }
         }
+    }
+
+    pub fn center(&self) -> TilePos {
+        (self.start + self.end) / 2
     }
 
     pub fn iter(&self) -> impl Iterator<Item = TilePos> {

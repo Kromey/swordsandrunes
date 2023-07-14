@@ -82,4 +82,15 @@ impl Map {
             }
         }
     }
+
+    pub fn add_tunnel(&self, tunnel: impl Iterator<Item = TilePos>, commands: &mut Commands, asset_server: &AssetServer) {
+        let floor = TileBundle::floor();
+        let floor_texture: Handle<Image> = asset_server.load("tomb0.png");
+
+        for pos in tunnel {
+            if let Some(tile) = self.get(pos) {
+                commands.entity(tile).insert((floor.clone(), floor_texture.clone()));
+            }
+        }
+    }
 }
