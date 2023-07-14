@@ -14,6 +14,21 @@ fn setup_camera(mut commands: Commands, mut next_state: ResMut<NextState<GameSta
     next_state.set(GameState::MainMenu);
 }
 
+/// Update the camera's position when the player moves
+/// 
+/// FIXME: This is really janky as there may be a 1-frame delay, resulting in flickering
+#[allow(clippy::type_complexity)]
+fn camera_follow_player(
+    mut camera_qry: Query<&mut Transform, With<PrimaryCamera>>,
+    player_qry: Query<&Transform, (With<Player>, Without<PrimaryCamera>, Changed<Transform>)>,
+) {
+    if let Ok(mut camera_transform) = camera_qry.get_single_mut() {
+        if let Ok(player_transform) = player_qry.get_single() {
+            camera_transform.translation = player_transform.translation.truncate().extend(camera_transform.translation.z);
+        }
+    }
+}
+
 fn setup_game(
     mut commands: Commands,
     mut next_state: ResMut<NextState<GameState>>,
@@ -23,7 +38,7 @@ fn setup_game(
     let width = 80;
     let height = 45;
 
-    let map = generate_dungeon(width, height, &mut commands, &asset_server);
+    let (map, player_start) = generate_dungeon(width, height, &mut commands, &asset_server);
 
     if let Ok(mut transform) = camera.get_single_mut() {
         transform.translation = map.size.center().extend(transform.translation.z);
@@ -41,7 +56,7 @@ fn setup_game(
     commands.spawn((
         SpriteBundle {
             texture: asset_server.load("human_adventurer.png"),
-            transform: map.size.center_tile().as_transform(1.0),
+            transform: player_start.as_transform(1.0),
             ..Default::default()
         },
         Name::new("The Player"),
@@ -58,6 +73,7 @@ pub struct SetupPlugin;
 impl Plugin for SetupPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, setup_camera.run_if(in_state(GameState::Starting)))
-            .add_systems(Update, setup_game.run_if(in_state(GameState::Setup)));
+            .add_systems(Update, setup_game.run_if(in_state(GameState::Setup)))
+            .add_systems(Update, camera_follow_player);
     }
 }

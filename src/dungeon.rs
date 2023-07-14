@@ -9,7 +9,7 @@ pub use tunnel::*;
 
 use crate::{map::Map, tiles::TilePos};
 
-pub fn generate_dungeon(width: u32, height: u32, commands: &mut Commands, asset_server: &AssetServer) -> Map {
+pub fn generate_dungeon(width: u32, height: u32, commands: &mut Commands, asset_server: &AssetServer) -> (Map, TilePos) {
     let max_room_size = 10;
     let min_room_size = 6;
     let max_rooms = 30;
@@ -46,5 +46,5 @@ pub fn generate_dungeon(width: u32, height: u32, commands: &mut Commands, asset_
         rooms.push(new_room);
     }
 
-    map
+    (map, player_start)
 }
