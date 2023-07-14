@@ -4,6 +4,7 @@ use bevy::{
     DefaultPlugins,
 };
 
+pub mod dungeon;
 pub mod input_manager;
 pub mod map;
 pub mod movement;

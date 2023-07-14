@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::tiles::TilePos;
+use crate::{tiles::{TilePos, TileBundle, Tile}, dungeon::RectangularRoom};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct MapSize {
@@ -50,12 +50,36 @@ pub struct Map {
 }
 
 impl Map {
+    pub fn new(width: u32, height: u32, commands: &mut Commands, asset_server: &AssetServer) -> Self {
+        let size = MapSize::new(width, height);
+        let tiles = (0..size.len()).map(|i| {
+            let pos = TilePos::from_index(i as usize, size);
+            commands.spawn((
+                TileBundle::wall(),
+                Tile::sprite_bundle(pos, asset_server.load("catacombs2.png")),
+            )).id()
+        }).collect();
+    
+        Self { tiles, size, }
+    }
+
     pub fn get(&self, pos: TilePos) -> Option<Entity> {
         if self.size.in_bounds(pos) {
             let idx = pos.as_index(self.size);
             Some(self.tiles[idx])
         } else {
             None
+        }
+    }
+
+    pub fn add_room(&self, room: RectangularRoom, commands: &mut Commands, asset_server: &AssetServer) {
+        let floor = TileBundle::floor();
+        let floor_texture: Handle<Image> = asset_server.load("tomb0.png");
+
+        for pos in room.iter() {
+            if let Some(tile) = self.get(pos) {
+                commands.entity(tile).insert((floor.clone(), floor_texture.clone()));
+            }
         }
     }
 }

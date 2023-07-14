@@ -60,6 +60,12 @@ impl From<Vec2> for TilePos {
     }
 }
 
+impl From<(u32, u32)> for TilePos {
+    fn from((x, y): (u32, u32)) -> Self {
+        Self { x, y }
+    }
+}
+
 impl std::ops::Add for TilePos {
     type Output = Self;
 

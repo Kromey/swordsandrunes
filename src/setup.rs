@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{GameState, map::{MapSize, Map}, tiles::{TilePos, TileBundle}};
+use crate::{GameState, tiles::TilePos, dungeon::generate_dungeon};
 
 #[derive(Debug, Default, Clone, Copy, Component)]
 pub struct Player;
@@ -23,33 +23,16 @@ fn setup_game(
     let width = 80;
     let height = 45;
 
-    let size = MapSize::new(width, height);
-    let tiles = (0..size.len()).map(|i| {
-        let pos = TilePos::from_index(i as usize, size);
-        commands.spawn(TileBundle::floor(pos.x, pos.y, asset_server.load("tomb0.png"))).id()
-    }).collect();
-
-    let map = Map { tiles, size, };
-
-    let walls = TileBundle::wall(0, 0, asset_server.load("catacombs2.png"));
-    for i in 30..33 {
-        let pos = TilePos::new(i, 22);
-        if let Some(tile) = map.get(pos) {
-            println!("{pos:?} => {} => {:?}", pos.as_index(size), TilePos::from_index(pos.as_index(size), size));
-            commands.entity(tile).insert((walls.walkable, walls.transparent, walls.name.clone(), walls.texture.clone()));
-        }
-    }
-
-    commands.insert_resource(map);
+    let map = generate_dungeon(width, height, &mut commands, &asset_server);
 
     if let Ok(mut transform) = camera.get_single_mut() {
-        transform.translation = size.center().extend(transform.translation.z);
+        transform.translation = map.size.center().extend(transform.translation.z);
     }
 
     commands.spawn((
         SpriteBundle {
             texture: asset_server.load("orc.png"),
-            transform: (size.center_tile() - TilePos::new(5, 0)).as_transform(1.0),
+            transform: (map.size.center_tile() - TilePos::new(5, 0)).as_transform(1.0),
             ..Default::default()
         },
         Name::new("Orc"),
@@ -58,13 +41,14 @@ fn setup_game(
     commands.spawn((
         SpriteBundle {
             texture: asset_server.load("human_adventurer.png"),
-            transform: size.center_tile().as_transform(1.0),
+            transform: map.size.center_tile().as_transform(1.0),
             ..Default::default()
         },
         Name::new("The Player"),
         Player,
     ));
 
+    commands.insert_resource(map);
     next_state.set(GameState::Running);
 }
 
