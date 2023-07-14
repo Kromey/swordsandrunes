@@ -1,6 +1,6 @@
 use bevy::{
     prelude::*,
-    window::{Window, WindowPlugin, WindowResolution},
+    window::{Window, WindowPlugin, WindowMode},
     DefaultPlugins,
 };
 
@@ -10,11 +10,6 @@ pub mod map;
 pub mod movement;
 pub mod setup;
 pub mod tiles;
-
-/// Initial width of the game window
-const WINDOW_WIDTH: f32 = 1024.;
-/// Initial height of the game window
-const WINDOW_HEIGHT: f32 = 768.;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash, States)]
 pub enum GameState {
@@ -49,7 +44,7 @@ pub fn run() {
         .add_plugins(DefaultPlugins.set(WindowPlugin {
             primary_window: Some(Window {
                 title: "Swords and Runes".to_string(),
-                resolution: WindowResolution::from((WINDOW_WIDTH, WINDOW_HEIGHT)),
+                mode: WindowMode::BorderlessFullscreen,
                 ..Default::default()
             }),
             ..Default::default()
