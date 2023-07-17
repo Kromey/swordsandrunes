@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 pub mod room;
-use rand::{SeedableRng, Rng};
+use rand::{Rng, SeedableRng};
 use rand_xoshiro::Xoshiro512StarStar;
 pub use room::*;
 pub mod tunnel;
@@ -9,7 +9,12 @@ pub use tunnel::*;
 
 use crate::{map::Map, tiles::TilePos};
 
-pub fn generate_dungeon(width: u32, height: u32, commands: &mut Commands, asset_server: &AssetServer) -> (Map, TilePos) {
+pub fn generate_dungeon(
+    width: u32,
+    height: u32,
+    commands: &mut Commands,
+    asset_server: &AssetServer,
+) -> (Map, TilePos) {
     let max_room_size = 10;
     let min_room_size = 6;
     let max_rooms = 30;
@@ -44,9 +49,11 @@ pub fn generate_dungeon(width: u32, height: u32, commands: &mut Commands, asset_
     }
 
     for i in 0..(rooms.len() - 1) {
-        let nearest = rooms.iter().skip(i + 1).min_by_key(|room| {
-            rooms[i].center().distance(room.center())
-        }).unwrap();
+        let nearest = rooms
+            .iter()
+            .skip(i + 1)
+            .min_by_key(|room| rooms[i].center().distance(room.center()))
+            .unwrap();
         let tunnel = simple_tunnel(rooms[i].center(), nearest.center());
         map.add_tunnel(tunnel, commands, asset_server);
     }

@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{GameState, tiles::TilePos, dungeon::generate_dungeon, camera::PrimaryCamera};
+use crate::{camera::PrimaryCamera, dungeon::generate_dungeon, tiles::TilePos, GameState};
 
 #[derive(Debug, Default, Clone, Copy, Component)]
 pub struct Player;

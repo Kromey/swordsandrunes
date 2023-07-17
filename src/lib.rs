@@ -1,6 +1,6 @@
 use bevy::{
     prelude::*,
-    window::{Window, WindowPlugin, WindowMode},
+    window::{Window, WindowMode, WindowPlugin},
     DefaultPlugins,
 };
 

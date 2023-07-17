@@ -15,7 +15,7 @@ impl RectangularRoom {
             end: TilePos {
                 x: from.x + width - 1, // End is inclusive, but adding width gets an exclusive point
                 y: from.y + height - 1, // Ditto
-            }
+            },
         }
     }
 
@@ -24,10 +24,10 @@ impl RectangularRoom {
     }
 
     pub fn intersects(&self, other: Self) -> bool {
-        self.start.x <= other.end.x &&
-            self.end.x >= other.start.x &&
-            self.start.y <= other.end.y &&
-            self.end.y >= other.start.y
+        self.start.x <= other.end.x
+            && self.end.x >= other.start.x
+            && self.start.y <= other.end.y
+            && self.end.y >= other.start.y
     }
 
     pub fn iter(&self) -> impl Iterator<Item = TilePos> {

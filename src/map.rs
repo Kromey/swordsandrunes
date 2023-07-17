@@ -1,6 +1,9 @@
 use bevy::prelude::*;
 
-use crate::{tiles::{TilePos, TileBundle, Tile}, dungeon::RectangularRoom};
+use crate::{
+    dungeon::RectangularRoom,
+    tiles::{Tile, TileBundle, TilePos},
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct MapSize {
@@ -22,7 +25,12 @@ impl MapSize {
     }
 
     pub fn center(&self) -> Vec2 {
-        TilePos { x: self.width, y: self.height }.as_vec() / 2.0
+        TilePos {
+            x: self.width,
+            y: self.height,
+        }
+        .as_vec()
+            / 2.0
     }
 
     pub fn center_tile(&self) -> TilePos {
@@ -50,17 +58,26 @@ pub struct Map {
 }
 
 impl Map {
-    pub fn new(width: u32, height: u32, commands: &mut Commands, asset_server: &AssetServer) -> Self {
+    pub fn new(
+        width: u32,
+        height: u32,
+        commands: &mut Commands,
+        asset_server: &AssetServer,
+    ) -> Self {
         let size = MapSize::new(width, height);
-        let tiles = (0..size.len()).map(|i| {
-            let pos = TilePos::from_index(i as usize, size);
-            commands.spawn((
-                TileBundle::wall(),
-                Tile::sprite_bundle(pos, asset_server.load("catacombs2.png")),
-            )).id()
-        }).collect();
-    
-        Self { tiles, size, }
+        let tiles = (0..size.len())
+            .map(|i| {
+                let pos = TilePos::from_index(i as usize, size);
+                commands
+                    .spawn((
+                        TileBundle::wall(),
+                        Tile::sprite_bundle(pos, asset_server.load("catacombs2.png")),
+                    ))
+                    .id()
+            })
+            .collect();
+
+        Self { tiles, size }
     }
 
     pub fn get(&self, pos: TilePos) -> Option<Entity> {
@@ -72,24 +89,38 @@ impl Map {
         }
     }
 
-    pub fn add_room(&self, room: RectangularRoom, commands: &mut Commands, asset_server: &AssetServer) {
+    pub fn add_room(
+        &self,
+        room: RectangularRoom,
+        commands: &mut Commands,
+        asset_server: &AssetServer,
+    ) {
         let floor = TileBundle::floor();
         let floor_texture: Handle<Image> = asset_server.load("tomb0.png");
 
         for pos in room.iter() {
             if let Some(tile) = self.get(pos) {
-                commands.entity(tile).insert((floor.clone(), floor_texture.clone()));
+                commands
+                    .entity(tile)
+                    .insert((floor.clone(), floor_texture.clone()));
             }
         }
     }
 
-    pub fn add_tunnel(&self, tunnel: impl Iterator<Item = TilePos>, commands: &mut Commands, asset_server: &AssetServer) {
+    pub fn add_tunnel(
+        &self,
+        tunnel: impl Iterator<Item = TilePos>,
+        commands: &mut Commands,
+        asset_server: &AssetServer,
+    ) {
         let floor = TileBundle::floor();
         let floor_texture: Handle<Image> = asset_server.load("tomb0.png");
 
         for pos in tunnel {
             if let Some(tile) = self.get(pos) {
-                commands.entity(tile).insert((floor.clone(), floor_texture.clone()));
+                commands
+                    .entity(tile)
+                    .insert((floor.clone(), floor_texture.clone()));
             }
         }
     }

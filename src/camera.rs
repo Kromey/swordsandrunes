@@ -1,6 +1,10 @@
 use bevy::prelude::*;
 
-use crate::{GameState, setup::Player, input_manager::{Actions, Action}};
+use crate::{
+    input_manager::{Action, Actions},
+    setup::Player,
+    GameState,
+};
 
 #[derive(Debug, Default, Clone, Copy, Component)]
 pub struct PrimaryCamera;
@@ -12,7 +16,7 @@ fn setup_camera(mut commands: Commands, mut next_state: ResMut<NextState<GameSta
 }
 
 /// Update the camera's position when the player moves
-/// 
+///
 /// FIXME: This is really janky as there may be a 1-frame delay, resulting in flickering
 #[allow(clippy::type_complexity)]
 fn camera_follow_player(
@@ -21,7 +25,10 @@ fn camera_follow_player(
 ) {
     if let Ok(mut camera_transform) = camera_qry.get_single_mut() {
         if let Ok(player_transform) = player_qry.get_single() {
-            camera_transform.translation = player_transform.translation.truncate().extend(camera_transform.translation.z);
+            camera_transform.translation = player_transform
+                .translation
+                .truncate()
+                .extend(camera_transform.translation.z);
         }
     }
 }

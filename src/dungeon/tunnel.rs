@@ -1,11 +1,13 @@
-use std::{cmp::{min, max}, ops::RangeInclusive};
+use std::{
+    cmp::{max, min},
+    ops::RangeInclusive,
+};
 
 use itertools::Itertools;
-use rand::{SeedableRng, Rng};
+use rand::{Rng, SeedableRng};
 use rand_xoshiro::Xoshiro512StarStar;
 
 use crate::tiles::TilePos;
-
 
 pub fn simple_tunnel(start: TilePos, end: TilePos) -> impl Iterator<Item = TilePos> {
     let x1 = start.x;
@@ -19,7 +21,8 @@ pub fn simple_tunnel(start: TilePos, end: TilePos) -> impl Iterator<Item = TileP
         (x1, y2)
     };
 
-    make_range(x1, corner_x).cartesian_product(make_range(y1, corner_y))
+    make_range(x1, corner_x)
+        .cartesian_product(make_range(y1, corner_y))
         .chain(make_range(corner_x, x2).cartesian_product(make_range(corner_y, y2)))
         .map(TilePos::from)
 }

@@ -2,8 +2,10 @@ use bevy::prelude::*;
 
 use crate::{
     input_manager::{Actions, InputManager},
+    map::Map,
     setup::Player,
-    GameState, tiles::{TILE_SIZE_F32, TilePos, Tile, Walkable}, map::Map,
+    tiles::{Tile, TilePos, Walkable, TILE_SIZE_F32},
+    GameState,
 };
 
 pub fn movement_system(
@@ -29,7 +31,7 @@ pub fn movement_system(
 
     if delta.length_squared() > 0.1 {
         delta = delta.round() * TILE_SIZE_F32;
-    
+
         if let Ok(mut transform) = player.get_single_mut() {
             let dest = TilePos::from(transform.translation.truncate() + delta);
 
@@ -40,7 +42,6 @@ pub fn movement_system(
                     }
                 }
             }
-
         }
     }
 }
