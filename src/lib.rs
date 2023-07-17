@@ -4,6 +4,7 @@ use bevy::{
     DefaultPlugins,
 };
 
+pub mod camera;
 pub mod dungeon;
 pub mod input_manager;
 pub mod map;
@@ -53,6 +54,7 @@ pub fn run() {
         // Begin game configuration
         .add_state::<GameState>()
         .add_systems(Update, state_manager)
+        .add_plugins(camera::CameraPlugin)
         .add_plugins(input_manager::InputManagerPlugin)
         .add_plugins(movement::MovementPlugin)
         .add_plugins(setup::SetupPlugin)
