@@ -16,6 +16,11 @@ impl TilePos {
         Self { x, y }
     }
 
+    /// Manhattan distance from this position to another
+    pub fn distance(&self, other: TilePos) -> u32 {
+        self.x.abs_diff(other.x) + self.y.abs_diff(other.y)
+    }
+
     pub fn from_index(idx: usize, size: MapSize) -> Self {
         Self {
             x: idx as u32 % size.width,

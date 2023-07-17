@@ -38,12 +38,20 @@ pub fn generate_dungeon(width: u32, height: u32, commands: &mut Commands, asset_
         if rooms.is_empty() {
             // First room, good place to start the player? Sure! Why not?
             player_start = new_room.center();
-        } else if let Some(prev_room) = rooms.last() {
-            let tunnel = simple_tunnel(new_room.center(), prev_room.center());
-            map.add_tunnel(tunnel, commands, asset_server);
+        // } else if let Some(prev_room) = rooms.last() {
+        //     let tunnel = simple_tunnel(new_room.center(), prev_room.center());
+        //     map.add_tunnel(tunnel, commands, asset_server);
         }
 
         rooms.push(new_room);
+    }
+
+    for i in 0..(rooms.len() - 1) {
+        let nearest = rooms.iter().skip(i + 1).min_by_key(|room| {
+            rooms[i].center().distance(room.center())
+        }).unwrap();
+        let tunnel = simple_tunnel(rooms[i].center(), nearest.center());
+        map.add_tunnel(tunnel, commands, asset_server);
     }
 
     (map, player_start)
