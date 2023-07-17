@@ -22,6 +22,7 @@ features = [
   "bevy_winit",         # Window management
   "x11",                # Linux: Support X11 windowing system
   "wayland",            # Linux: Support Wayland windowing system
+  "bevy_gizmos",        # Immediate-mode drawing
 
   # Rendering
   "bevy_render",        # Rendering framework core

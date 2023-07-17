@@ -6,6 +6,7 @@ use bevy::{
 
 pub mod camera;
 pub mod dungeon;
+pub mod fieldofview;
 pub mod input_manager;
 pub mod map;
 pub mod movement;
@@ -54,6 +55,11 @@ pub fn run() {
         // Begin game configuration
         .add_state::<GameState>()
         .add_systems(Update, state_manager)
+        .add_systems(
+            Update,
+            fieldofview::update_fov.run_if(in_state(GameState::Running)),
+        )
+        .add_systems(Update, tiles::tile_fov)
         .add_plugins(camera::CameraPlugin)
         .add_plugins(input_manager::InputManagerPlugin)
         .add_plugins(movement::MovementPlugin)
