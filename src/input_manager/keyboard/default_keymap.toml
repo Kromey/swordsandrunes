@@ -17,3 +17,11 @@ keys = ["S", "Numpad2", "Down"]
 [[bind]]
 action = "WalkWest"
 keys = ["A", "Numpad4", "Left"]
+
+[[bind]]
+action = "ZoomOut"
+keys = ["Minus"]
+
+[[bind]]
+action = "ZoomIn"
+keys = ["Equals"]

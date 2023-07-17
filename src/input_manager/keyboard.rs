@@ -23,6 +23,10 @@ pub enum Action {
     WalkSouth,
     /// Walk west
     WalkWest,
+    /// Zoom out
+    ZoomOut,
+    /// Zoom In
+    ZoomIn,
 }
 
 impl Action {

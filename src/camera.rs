@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{GameState, setup::Player};
+use crate::{GameState, setup::Player, input_manager::{Actions, Action}};
 
 #[derive(Debug, Default, Clone, Copy, Component)]
 pub struct PrimaryCamera;
@@ -26,12 +26,30 @@ fn camera_follow_player(
     }
 }
 
+/// Update camera zoom
+fn camera_zoom(
+    actions: Res<Actions>,
+    mut camera_qry: Query<&mut OrthographicProjection, With<PrimaryCamera>>,
+) {
+    if let Ok(mut projection) = camera_qry.get_single_mut() {
+        if actions.perform(Action::ZoomIn) {
+            projection.scale -= 0.2;
+        }
+        if actions.perform(Action::ZoomOut) {
+            projection.scale += 0.2;
+        }
+
+        projection.scale = projection.scale.clamp(0.2, 2.0);
+    }
+}
+
 #[derive(Debug, Default)]
 pub struct CameraPlugin;
 
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(Update, setup_camera.run_if(in_state(GameState::Starting)))
-            .add_systems(Update, camera_follow_player);
+            .add_systems(Update, camera_follow_player)
+            .add_systems(Update, camera_zoom);
     }
 }
