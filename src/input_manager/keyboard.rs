@@ -13,6 +13,8 @@ use keymap::KeyMap;
 #[non_exhaustive]
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize)]
 pub enum Action {
+    /// Reveal the entire map
+    RevealMap,
     /// Toggle showing the debug menu
     ToggleDebug,
     /// Walk north

@@ -59,6 +59,7 @@ pub fn run() {
             Update,
             fieldofview::update_fov.run_if(in_state(GameState::Running)),
         )
+        .add_systems(Update, map::reveal_map)
         .add_systems(Update, tiles::tile_fov)
         .add_plugins(camera::CameraPlugin)
         .add_plugins(input_manager::InputManagerPlugin)

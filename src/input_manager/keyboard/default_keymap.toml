@@ -1,4 +1,8 @@
 [[bind]]
+action = "RevealMap"
+key = "R"
+
+[[bind]]
 action = "ToggleDebug"
 key = "F3"
 

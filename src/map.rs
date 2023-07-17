@@ -2,6 +2,8 @@ use bevy::prelude::*;
 
 use crate::{
     dungeon::RectangularRoom,
+    fieldofview::FieldOfView,
+    input_manager::{Action, ActionModifier, Actions},
     tiles::{Tile, TileBundle, TilePos},
 };
 
@@ -121,6 +123,16 @@ impl Map {
                 commands
                     .entity(tile)
                     .insert((floor.clone(), floor_texture.clone()));
+            }
+        }
+    }
+}
+
+pub fn reveal_map(actions: Res<Actions>, mut tiles: Query<&mut FieldOfView, With<Tile>>) {
+    if actions.perform(Action::RevealMap) && actions.modifier(ActionModifier::Alt) {
+        for mut fov in tiles.iter_mut() {
+            if *fov == FieldOfView::Unexplored {
+                *fov = FieldOfView::NotVisible;
             }
         }
     }
