@@ -74,7 +74,7 @@ impl Map {
                 commands
                     .spawn((
                         TileBundle::wall(),
-                        Tile::sprite_bundle(pos, asset_server.load("catacombs2.png")),
+                        Tile::sprite_bundle(pos, asset_server.load("sprites/catacombs2.png")),
                     ))
                     .id()
             })
@@ -103,7 +103,7 @@ impl Map {
         asset_server: &AssetServer,
     ) {
         let floor = TileBundle::floor();
-        let floor_texture: Handle<Image> = asset_server.load("tomb0.png");
+        let floor_texture: Handle<Image> = asset_server.load("sprites/tomb0.png");
 
         for pos in room.iter() {
             if let Some(tile) = self.get(pos) {
@@ -121,7 +121,7 @@ impl Map {
         asset_server: &AssetServer,
     ) {
         let floor = TileBundle::floor();
-        let floor_texture: Handle<Image> = asset_server.load("tomb0.png");
+        let floor_texture: Handle<Image> = asset_server.load("sprites/tomb0.png");
 
         for pos in tunnel {
             if let Some(tile) = self.get(pos) {

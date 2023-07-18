@@ -22,7 +22,7 @@ fn setup_game(
 
     commands.spawn((
         SpriteBundle {
-            texture: asset_server.load("human_adventurer.png"),
+            texture: asset_server.load("sprites/human_adventurer.png"),
             transform: player_start.as_transform(1.0),
             ..Default::default()
         },
