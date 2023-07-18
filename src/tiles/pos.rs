@@ -5,7 +5,7 @@ use crate::map::MapSize;
 use super::TILE_SIZE;
 
 /// Position in terms of tiles
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash, Component)]
 pub struct TilePos {
     pub x: u32,
     pub y: u32,

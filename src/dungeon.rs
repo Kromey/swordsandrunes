@@ -1,8 +1,8 @@
 use bevy::prelude::*;
-
-pub mod room;
 use rand::{Rng, SeedableRng};
 use rand_xoshiro::Xoshiro512StarStar;
+
+pub mod room;
 pub use room::*;
 pub mod tunnel;
 pub use tunnel::*;
@@ -19,11 +19,11 @@ pub fn generate_dungeon(
     let min_room_size = 6;
     let max_rooms = 30;
 
-    let mut rooms: Vec<RectangularRoom> = Vec::new();
+    let mut room_list: Vec<RectangularRoom> = Vec::new();
 
     let mut rng = Xoshiro512StarStar::from_entropy();
 
-    let map = Map::new(width, height, commands, asset_server);
+    let mut map = Map::new(width, height, commands, asset_server);
     let mut player_start = map.size.center_tile();
 
     for _ in 0..max_rooms {
@@ -35,28 +35,32 @@ pub fn generate_dungeon(
 
         let new_room = RectangularRoom::new(TilePos::new(x, y), room_width, room_height);
 
-        if rooms.iter().any(|room| room.intersects(new_room)) {
+        if room_list.iter().any(|room| room.intersects(new_room)) {
             continue;
         }
 
         map.add_room(new_room, commands, asset_server);
-        if rooms.is_empty() {
+        if room_list.is_empty() {
             // First room, good place to start the player? Sure! Why not?
             player_start = new_room.center();
         }
 
-        rooms.push(new_room);
+        room_list.push(new_room);
     }
 
-    for i in 0..(rooms.len() - 1) {
-        let nearest = rooms
-            .iter()
-            .skip(i + 1)
-            .min_by_key(|room| rooms[i].center().distance(room.center()))
-            .unwrap();
-        let tunnel = simple_tunnel(rooms[i].center(), nearest.center());
-        map.add_tunnel(tunnel, commands, asset_server);
+    let mut rooms = RoomGraph::from_rooms(&room_list);
+    rooms.triangulate();
+    rooms.to_min_spanning_tree();
+
+    for (a, b) in rooms.edges() {
+        map.add_tunnel(
+            simple_tunnel(a.center(), b.center()),
+            commands,
+            asset_server,
+        );
     }
+
+    map.rooms = rooms;
 
     (map, player_start)
 }

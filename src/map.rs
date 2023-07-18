@@ -1,7 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
-    dungeon::RectangularRoom,
+    dungeon::{RectangularRoom, RoomGraph},
     fieldofview::FieldOfView,
     input_manager::{Action, ActionModifier, Actions},
     tiles::{Tile, TileBundle, TilePos},
@@ -57,6 +57,7 @@ impl Default for MapSize {
 pub struct Map {
     pub tiles: Vec<Entity>,
     pub size: MapSize,
+    pub rooms: RoomGraph,
 }
 
 impl Map {
@@ -79,7 +80,11 @@ impl Map {
             })
             .collect();
 
-        Self { tiles, size }
+        Self {
+            tiles,
+            size,
+            rooms: RoomGraph::default(),
+        }
     }
 
     pub fn get(&self, pos: TilePos) -> Option<Entity> {
