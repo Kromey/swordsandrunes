@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{camera::PrimaryCamera, dungeon::generate_dungeon, tiles::TilePos, GameState};
+use crate::{camera::PrimaryCamera, dungeon::generate_dungeon, GameState};
 
 #[derive(Debug, Default, Clone, Copy, Component)]
 pub struct Player;
@@ -19,15 +19,6 @@ fn setup_game(
     if let Ok(mut transform) = camera.get_single_mut() {
         transform.translation = map.size.center().extend(transform.translation.z);
     }
-
-    commands.spawn((
-        SpriteBundle {
-            texture: asset_server.load("orc.png"),
-            transform: (map.size.center_tile() - TilePos::new(5, 0)).as_transform(1.0),
-            ..Default::default()
-        },
-        Name::new("Orc"),
-    ));
 
     commands.spawn((
         SpriteBundle {
