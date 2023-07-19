@@ -36,10 +36,8 @@ pub fn movement_system(
             let dest = TilePos::from(transform.translation.truncate() + delta);
 
             if let Some(tile) = map.get(dest) {
-                if let Ok(walkable) = tile_qry.get(tile) {
-                    if **walkable {
-                        transform.translation = dest.as_vec().extend(transform.translation.z);
-                    }
+                if tile_qry.get(tile).is_ok() {
+                    transform.translation = dest.as_vec().extend(transform.translation.z);
                 }
             }
         }

@@ -27,8 +27,7 @@ pub fn update_fov(
 
         let fov = compute_fov(player_pos, |tile| {
             map.get(tile)
-                .and_then(|entity| transparent_tiles_qry.get(entity).ok())
-                .map_or(true, |transparent| !**transparent)
+                .map_or(true, |entity| transparent_tiles_qry.get(entity).is_err())
         });
 
         for (mut tile_fov, transform) in fov_files_qry.iter_mut() {

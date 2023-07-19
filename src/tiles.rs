@@ -26,21 +26,17 @@ impl Tile {
 }
 
 /// Is a tile walkable?
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Deref, DerefMut, Component)]
-pub struct Walkable(bool);
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component)]
+pub struct Walkable;
 
 /// Is a tile transparent?
-#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Deref, DerefMut, Component)]
-pub struct Transparent(bool);
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component)]
+pub struct Transparent;
 
 #[derive(Debug, Clone, Default, Bundle)]
 pub struct TileBundle {
     /// Marker component indicating that this tile is, indeed, a tile
     pub tile: Tile,
-    /// Whether or not a tile can be walked across
-    pub walkable: Walkable,
-    /// Whether or not a tile is transparent to light/vision
-    pub transparent: Transparent,
     /// The tile's name
     pub name: Name,
     /// The tile's FoV status wrt the player
@@ -48,20 +44,20 @@ pub struct TileBundle {
 }
 
 impl TileBundle {
-    pub fn floor() -> Self {
-        Self {
-            walkable: Walkable(true),
-            transparent: Transparent(true),
-            name: Name::new("Stone Floor"),
-            tile: Tile,
-            fov: FieldOfView::Unexplored,
-        }
+    pub fn floor() -> impl Bundle {
+        (
+            Self {
+                name: Name::new("Stone Floor"),
+                tile: Tile,
+                fov: FieldOfView::Unexplored,
+            },
+            Walkable,
+            Transparent,
+        )
     }
 
-    pub fn wall() -> Self {
+    pub fn wall() -> impl Bundle {
         Self {
-            walkable: Walkable(false),
-            transparent: Transparent(false),
             name: Name::new("Stone Wall"),
             tile: Tile,
             fov: FieldOfView::Unexplored,
