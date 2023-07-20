@@ -50,9 +50,21 @@ impl From<Transform> for TilePos {
     }
 }
 
+impl From<&Transform> for TilePos {
+    fn from(value: &Transform) -> Self {
+        Self::from(*value)
+    }
+}
+
 impl From<Vec3> for TilePos {
     fn from(value: Vec3) -> Self {
         Self::from(value.truncate())
+    }
+}
+
+impl From<&Vec3> for TilePos {
+    fn from(value: &Vec3) -> Self {
+        Self::from(*value)
     }
 }
 
@@ -65,9 +77,21 @@ impl From<Vec2> for TilePos {
     }
 }
 
+impl From<&Vec2> for TilePos {
+    fn from(value: &Vec2) -> Self {
+        Self::from(*value)
+    }
+}
+
 impl From<(u32, u32)> for TilePos {
     fn from((x, y): (u32, u32)) -> Self {
         Self { x, y }
+    }
+}
+
+impl From<&(u32, u32)> for TilePos {
+    fn from(value: &(u32, u32)) -> Self {
+        Self::from(*value)
     }
 }
 
