@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::map::MapSize;
+use crate::dungeon::MapSize;
 
 use super::TILE_SIZE;
 

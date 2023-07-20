@@ -1,13 +1,10 @@
-use std::{
-    cmp::{max, min},
-    ops::RangeInclusive,
-};
+use std::cmp::{max, min};
 
 use itertools::Itertools;
 use rand::{Rng, SeedableRng};
 use rand_xoshiro::Xoshiro512StarStar;
 
-use crate::tiles::TilePos;
+use crate::dungeon::TilePos;
 
 pub fn simple_tunnel(start: TilePos, end: TilePos) -> impl Iterator<Item = TilePos> {
     let x1 = start.x;
@@ -27,7 +24,7 @@ pub fn simple_tunnel(start: TilePos, end: TilePos) -> impl Iterator<Item = TileP
         .map(TilePos::from)
 }
 
-fn make_range(from: u32, to: u32) -> RangeInclusive<u32> {
+fn make_range(from: u32, to: u32) -> impl Iterator<Item = u32> + Clone {
     let a = min(from, to);
     let b = max(from, to);
 

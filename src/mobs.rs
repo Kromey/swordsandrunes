@@ -2,7 +2,7 @@ use bevy::prelude::*;
 use serde::Deserialize;
 use std::{collections::HashMap, fs::read_to_string, path::PathBuf};
 
-use crate::{tiles::BlocksMovement, utils::get_dat_path};
+use crate::{dungeon::BlocksMovement, utils::get_dat_path};
 
 /// Marker component for mobs
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component)]

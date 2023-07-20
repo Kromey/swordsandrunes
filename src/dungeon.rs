@@ -2,12 +2,14 @@ use bevy::prelude::*;
 use rand::{Rng, SeedableRng};
 use rand_xoshiro::Xoshiro512StarStar;
 
-pub mod room;
-pub use room::*;
-pub mod tunnel;
-pub use tunnel::*;
-
-use crate::{map::Map, tiles::TilePos};
+mod map;
+pub use map::{Map, MapSize};
+mod room;
+pub use room::{RectangularRoom, RoomGraph};
+mod tiles;
+pub use tiles::{BlocksMovement, BlocksSight, Tile, TileBundle, TilePos, TILE_SIZE, TILE_SIZE_F32};
+mod tunnel;
+pub use tunnel::simple_tunnel;
 
 pub fn generate_dungeon(
     width: u32,
@@ -63,4 +65,13 @@ pub fn generate_dungeon(
     map.rooms = rooms;
 
     (map, player_start)
+}
+
+#[derive(Debug, Default)]
+pub struct DungeonPlugin;
+
+impl Plugin for DungeonPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Update, (map::reveal_map, tiles::tile_fov));
+    }
 }

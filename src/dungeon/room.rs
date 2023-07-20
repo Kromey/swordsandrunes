@@ -3,7 +3,7 @@ use delaunator::{next_halfedge, triangulate, Point};
 use itertools::Itertools;
 use petgraph::{algo::min_spanning_tree, data::FromElements, prelude::*};
 
-use crate::tiles::TilePos;
+use crate::dungeon::TilePos;
 
 type UnGraph = Graph<RectangularRoom, u32, Undirected, u16>;
 type RoomIndex = NodeIndex<u16>;

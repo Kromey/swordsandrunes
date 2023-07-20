@@ -1,9 +1,9 @@
 use bevy::prelude::*;
 
 use crate::{
+    dungeon::{BlocksMovement, TilePos, TILE_SIZE_F32},
     input_manager::{Actions, InputManager},
     setup::Player,
-    tiles::{BlocksMovement, TilePos, TILE_SIZE_F32},
     GameState,
 };
 

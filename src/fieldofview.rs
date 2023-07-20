@@ -2,9 +2,9 @@
 //! Ported and adapted from https://www.albertford.com/shadowcasting/
 
 use crate::{
+    dungeon::{BlocksSight, Tile, TilePos},
     mobs::Mob,
     setup::Player,
-    tiles::{BlocksSight, Tile, TilePos},
 };
 use bevy::prelude::*;
 use std::collections::HashSet;

@@ -1,10 +1,9 @@
 use bevy::prelude::*;
 
 use crate::{
-    dungeon::{RectangularRoom, RoomGraph},
+    dungeon::{BlocksMovement, BlocksSight, RectangularRoom, RoomGraph, Tile, TileBundle, TilePos},
     fieldofview::FieldOfView,
     input_manager::{Action, ActionModifier, Actions},
-    tiles::{BlocksMovement, BlocksSight, Tile, TileBundle, TilePos},
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
