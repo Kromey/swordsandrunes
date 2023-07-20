@@ -19,7 +19,7 @@ pub enum FieldOfView {
 pub fn update_fov(
     player_qry: Query<&Transform, (With<Player>, Changed<Transform>)>,
     blocks_sight_qry: Query<&Transform, With<BlocksSight>>,
-    mut fov_files_qry: Query<(&mut FieldOfView, &Transform), With<Tile>>,
+    mut fov_tiles_qry: Query<(&mut FieldOfView, &Transform), With<Tile>>,
 ) {
     if let Ok(player_transform) = player_qry.get_single() {
         let player_pos = TilePos::from(*player_transform);
@@ -31,7 +31,7 @@ pub fn update_fov(
 
         let fov = compute_fov(player_pos, |tile| blockers.contains(&tile));
 
-        for (mut tile_fov, transform) in fov_files_qry.iter_mut() {
+        for (mut tile_fov, transform) in fov_tiles_qry.iter_mut() {
             let pos = TilePos::from(*transform);
             if fov.contains(&pos) {
                 *tile_fov = FieldOfView::Visible;
