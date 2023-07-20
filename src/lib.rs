@@ -9,9 +9,11 @@ pub mod dungeon;
 pub mod fieldofview;
 pub mod input_manager;
 pub mod map;
+pub mod mobs;
 pub mod movement;
 pub mod setup;
 pub mod tiles;
+pub mod utils;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash, States)]
 pub enum GameState {

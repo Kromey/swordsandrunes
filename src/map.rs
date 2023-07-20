@@ -96,6 +96,10 @@ impl Map {
         }
     }
 
+    pub fn iter_rooms(&self) -> impl Iterator<Item = &RectangularRoom> {
+        self.rooms.rooms()
+    }
+
     pub fn add_room(
         &self,
         room: RectangularRoom,
