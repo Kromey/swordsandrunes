@@ -2,17 +2,15 @@ use bevy::prelude::*;
 
 use crate::{
     input_manager::{Actions, InputManager},
-    map::Map,
     setup::Player,
-    tiles::{BlocksMovement, Tile, TilePos, TILE_SIZE_F32},
+    tiles::{BlocksMovement, TilePos, TILE_SIZE_F32},
     GameState,
 };
 
 pub fn movement_system(
     actions: Res<Actions>,
     mut player: Query<&mut Transform, With<Player>>,
-    tile_qry: Query<&BlocksMovement, With<Tile>>,
-    map: Res<Map>,
+    blocks_movement_qry: Query<&Transform, (With<BlocksMovement>, Without<Player>)>,
 ) {
     let mut delta = Vec2::ZERO;
 
@@ -35,11 +33,12 @@ pub fn movement_system(
         if let Ok(mut transform) = player.get_single_mut() {
             let dest = TilePos::from(transform.translation.truncate() + delta);
 
-            if let Some(tile) = map.get(dest) {
-                // If it doesn't block movement, allow the move
-                if tile_qry.get(tile).is_err() {
-                    transform.translation = dest.as_vec().extend(transform.translation.z);
-                }
+            // If there's nothing in the destination blocking movement, allow the move
+            if !blocks_movement_qry
+                .iter()
+                .any(|transform| TilePos::from(*transform) == dest)
+            {
+                transform.translation = dest.as_vec().extend(transform.translation.z);
             }
         }
     }

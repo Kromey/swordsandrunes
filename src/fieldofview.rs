@@ -2,11 +2,11 @@
 //! Ported and adapted from https://www.albertford.com/shadowcasting/
 
 use crate::{
-    map::Map,
     setup::Player,
     tiles::{BlocksSight, Tile, TilePos},
 };
 use bevy::prelude::*;
+use std::collections::HashSet;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component)]
 pub enum FieldOfView {
@@ -18,17 +18,18 @@ pub enum FieldOfView {
 
 pub fn update_fov(
     player_qry: Query<&Transform, (With<Player>, Changed<Transform>)>,
-    opaque_tiles_qry: Query<&BlocksSight>,
+    blocks_sight_qry: Query<&Transform, With<BlocksSight>>,
     mut fov_files_qry: Query<(&mut FieldOfView, &Transform), With<Tile>>,
-    map: Res<Map>,
 ) {
     if let Ok(player_transform) = player_qry.get_single() {
         let player_pos = TilePos::from(*player_transform);
 
-        let fov = compute_fov(player_pos, |tile| {
-            map.get(tile)
-                .map_or(true, |entity| opaque_tiles_qry.get(entity).is_ok())
-        });
+        let blockers: HashSet<_> = blocks_sight_qry
+            .iter()
+            .map(|transform| TilePos::from(*transform))
+            .collect();
+
+        let fov = compute_fov(player_pos, |tile| blockers.contains(&tile));
 
         for (mut tile_fov, transform) in fov_files_qry.iter_mut() {
             let pos = TilePos::from(*transform);
