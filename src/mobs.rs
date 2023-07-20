@@ -4,13 +4,17 @@ use std::{collections::HashMap, fs::read_to_string, path::PathBuf};
 
 use crate::{tiles::BlocksMovement, utils::get_dat_path};
 
-type MobMap = HashMap<String, Mob>;
+/// Marker component for mobs
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component)]
+pub struct Mob;
+
+type MobMap = HashMap<String, MobData>;
 
 #[derive(Debug, Deserialize, Resource)]
 #[serde(from = "MobMap")]
 pub struct MobList {
     names: HashMap<String, usize>,
-    mobs: Vec<Mob>,
+    mobs: Vec<MobData>,
 }
 
 impl MobList {
@@ -45,18 +49,21 @@ impl From<MobMap> for MobList {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct Mob {
+pub struct MobData {
     sprite: String,
     #[serde(default = "default_blocks_movement")]
     blocks_movement: bool,
 }
 
-impl Mob {
+impl MobData {
     pub fn spawn(&self, commands: &mut Commands, asset_server: &AssetServer) -> Entity {
-        let mut ec = commands.spawn(SpriteBundle {
-            texture: asset_server.load(self.sprite()),
-            ..Default::default()
-        });
+        let mut ec = commands.spawn((
+            SpriteBundle {
+                texture: asset_server.load(self.sprite()),
+                ..Default::default()
+            },
+            Mob,
+        ));
 
         if self.blocks_movement {
             ec.insert(BlocksMovement);

@@ -2,6 +2,7 @@
 //! Ported and adapted from https://www.albertford.com/shadowcasting/
 
 use crate::{
+    mobs::Mob,
     setup::Player,
     tiles::{BlocksSight, Tile, TilePos},
 };
@@ -20,6 +21,7 @@ pub fn update_fov(
     player_qry: Query<&Transform, (With<Player>, Changed<Transform>)>,
     blocks_sight_qry: Query<&Transform, With<BlocksSight>>,
     mut fov_tiles_qry: Query<(&mut FieldOfView, &Transform), With<Tile>>,
+    mut mob_qry: Query<(&mut Visibility, &Transform), With<Mob>>,
 ) {
     if let Ok(player_transform) = player_qry.get_single() {
         let player_pos = TilePos::from(*player_transform);
@@ -32,11 +34,19 @@ pub fn update_fov(
         let fov = compute_fov(player_pos, |tile| blockers.contains(&tile));
 
         for (mut tile_fov, transform) in fov_tiles_qry.iter_mut() {
-            let pos = TilePos::from(*transform);
+            let pos = TilePos::from(transform);
             if fov.contains(&pos) {
                 *tile_fov = FieldOfView::Visible;
             } else if *tile_fov == FieldOfView::Visible {
                 *tile_fov = FieldOfView::NotVisible;
+            }
+        }
+
+        for (mut mob_visible, transform) in mob_qry.iter_mut() {
+            if fov.contains(&TilePos::from(transform)) {
+                *mob_visible = Visibility::Visible;
+            } else {
+                *mob_visible = Visibility::Hidden;
             }
         }
     }
