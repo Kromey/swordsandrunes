@@ -4,14 +4,14 @@ use crate::{
     input_manager::{Actions, InputManager},
     map::Map,
     setup::Player,
-    tiles::{Tile, TilePos, Walkable, TILE_SIZE_F32},
+    tiles::{BlocksMovement, Tile, TilePos, TILE_SIZE_F32},
     GameState,
 };
 
 pub fn movement_system(
     actions: Res<Actions>,
     mut player: Query<&mut Transform, With<Player>>,
-    tile_qry: Query<&Walkable, With<Tile>>,
+    tile_qry: Query<&BlocksMovement, With<Tile>>,
     map: Res<Map>,
 ) {
     let mut delta = Vec2::ZERO;
@@ -36,7 +36,8 @@ pub fn movement_system(
             let dest = TilePos::from(transform.translation.truncate() + delta);
 
             if let Some(tile) = map.get(dest) {
-                if tile_qry.get(tile).is_ok() {
+                // If it doesn't block movement, allow the move
+                if tile_qry.get(tile).is_err() {
                     transform.translation = dest.as_vec().extend(transform.translation.z);
                 }
             }

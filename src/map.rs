@@ -4,7 +4,7 @@ use crate::{
     dungeon::{RectangularRoom, RoomGraph},
     fieldofview::FieldOfView,
     input_manager::{Action, ActionModifier, Actions},
-    tiles::{Tile, TileBundle, TilePos},
+    tiles::{BlocksMovement, BlocksSight, Tile, TileBundle, TilePos},
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -108,6 +108,7 @@ impl Map {
             if let Some(tile) = self.get(pos) {
                 commands
                     .entity(tile)
+                    .remove::<(BlocksMovement, BlocksSight)>()
                     .insert((TileBundle::floor(), floor_texture.clone()));
             }
         }
@@ -125,6 +126,7 @@ impl Map {
             if let Some(tile) = self.get(pos) {
                 commands
                     .entity(tile)
+                    .remove::<(BlocksMovement, BlocksSight)>()
                     .insert((TileBundle::floor(), floor_texture.clone()));
             }
         }

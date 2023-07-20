@@ -4,7 +4,7 @@
 use crate::{
     map::Map,
     setup::Player,
-    tiles::{Tile, TilePos, Transparent},
+    tiles::{BlocksSight, Tile, TilePos},
 };
 use bevy::prelude::*;
 
@@ -18,7 +18,7 @@ pub enum FieldOfView {
 
 pub fn update_fov(
     player_qry: Query<&Transform, (With<Player>, Changed<Transform>)>,
-    transparent_tiles_qry: Query<&Transparent>,
+    opaque_tiles_qry: Query<&BlocksSight>,
     mut fov_files_qry: Query<(&mut FieldOfView, &Transform), With<Tile>>,
     map: Res<Map>,
 ) {
@@ -27,7 +27,7 @@ pub fn update_fov(
 
         let fov = compute_fov(player_pos, |tile| {
             map.get(tile)
-                .map_or(true, |entity| transparent_tiles_qry.get(entity).is_err())
+                .map_or(true, |entity| opaque_tiles_qry.get(entity).is_ok())
         });
 
         for (mut tile_fov, transform) in fov_files_qry.iter_mut() {

@@ -25,13 +25,13 @@ impl Tile {
     }
 }
 
-/// Is a tile walkable?
+/// Does an entity block movement?
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component)]
-pub struct Walkable;
+pub struct BlocksMovement;
 
-/// Is a tile transparent?
+/// Does an entity block sight?
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component)]
-pub struct Transparent;
+pub struct BlocksSight;
 
 #[derive(Debug, Clone, Default, Bundle)]
 pub struct TileBundle {
@@ -45,23 +45,23 @@ pub struct TileBundle {
 
 impl TileBundle {
     pub fn floor() -> impl Bundle {
-        (
-            Self {
-                name: Name::new("Stone Floor"),
-                tile: Tile,
-                fov: FieldOfView::Unexplored,
-            },
-            Walkable,
-            Transparent,
-        )
-    }
-
-    pub fn wall() -> impl Bundle {
         Self {
-            name: Name::new("Stone Wall"),
+            name: Name::new("Stone Floor"),
             tile: Tile,
             fov: FieldOfView::Unexplored,
         }
+    }
+
+    pub fn wall() -> impl Bundle {
+        (
+            Self {
+                name: Name::new("Stone Wall"),
+                tile: Tile,
+                fov: FieldOfView::Unexplored,
+            },
+            BlocksMovement,
+            BlocksSight,
+        )
     }
 }
 
