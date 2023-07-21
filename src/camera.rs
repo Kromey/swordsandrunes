@@ -55,8 +55,13 @@ pub struct CameraPlugin;
 
 impl Plugin for CameraPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, setup_camera.run_if(in_state(GameState::Starting)))
-            .add_systems(Update, camera_follow_player)
-            .add_systems(Update, camera_zoom);
+        app.add_systems(
+            Update,
+            (
+                setup_camera.run_if(in_state(GameState::Starting)),
+                camera_follow_player,
+                camera_zoom,
+            ),
+        );
     }
 }

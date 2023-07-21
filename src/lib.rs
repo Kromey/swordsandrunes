@@ -69,14 +69,13 @@ pub fn run() {
         // Begin game configuration
         .add_state::<GameState>()
         .add_state::<TurnState>()
-        .add_systems(Update, state_manager)
         .add_systems(
             Update,
-            skip_monster_turn.run_if(in_state(TurnState::MonsterTurn)),
-        )
-        .add_systems(
-            Update,
-            fieldofview::update_fov.run_if(in_state(GameState::Running)),
+            (
+                state_manager,
+                skip_monster_turn.run_if(in_state(TurnState::MonsterTurn)),
+                fieldofview::update_fov.run_if(in_state(GameState::Running)),
+            ),
         )
         .add_plugins((
             bump::BumpPlugin,
