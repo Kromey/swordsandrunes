@@ -46,7 +46,7 @@ impl HP {
     }
 
     pub fn add(&mut self, value: u8) {
-        self.current = min(self.max, self.current + value);
+        self.current = min(self.max, self.current.saturating_add(value));
     }
 
     pub fn sub(&mut self, value: u8) {
