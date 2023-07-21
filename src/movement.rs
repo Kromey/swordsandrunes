@@ -4,13 +4,14 @@ use crate::{
     dungeon::{BlocksMovement, TilePos, TILE_SIZE_F32},
     input_manager::{Actions, InputManager},
     setup::Player,
-    GameState,
+    TurnState,
 };
 
 pub fn movement_system(
     actions: Res<Actions>,
     mut player: Query<&mut Transform, With<Player>>,
     blocks_movement_qry: Query<&Transform, (With<BlocksMovement>, Without<Player>)>,
+    mut next_state: ResMut<NextState<TurnState>>,
 ) {
     let mut delta = Vec2::ZERO;
 
@@ -39,6 +40,9 @@ pub fn movement_system(
                 .any(|transform| TilePos::from(*transform) == dest)
             {
                 transform.translation = dest.as_vec().extend(transform.translation.z);
+
+                // We did our move, end our turn
+                next_state.0 = Some(TurnState::MonsterTurn);
             }
         }
     }
@@ -53,7 +57,7 @@ impl Plugin for MovementPlugin {
             Update,
             movement_system
                 .after(InputManager)
-                .run_if(in_state(GameState::Running)),
+                .run_if(in_state(TurnState::PlayerTurn)),
         );
     }
 }

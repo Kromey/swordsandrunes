@@ -9,6 +9,8 @@ use bevy::prelude::*;
 mod keymap;
 use keymap::KeyMap;
 
+use crate::TurnState;
+
 /// A game action that can be bound to a key
 #[non_exhaustive]
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize)]
@@ -39,6 +41,13 @@ impl Action {
         // matches!(self, ToggleDebug)
 
         true
+    }
+
+    /// Returns true if this Action ends the player's turn
+    const fn ends_turn(&self) -> bool {
+        use Action::*;
+
+        matches!(*self, WalkNorth | WalkEast | WalkWest | WalkSouth)
     }
 }
 
@@ -80,7 +89,9 @@ impl Actions {
     }
 
     /// Update actions state from current keyboard input
-    fn update(&mut self, keys: &Input<KeyCode>) {
+    fn update(&mut self, keys: &Input<KeyCode>) -> bool {
+        let mut received_player_input = false;
+
         for (&action, boundkeys) in self.bindings.iter() {
             let state = if boundkeys.is_empty() {
                 false
@@ -91,12 +102,15 @@ impl Actions {
             };
 
             self.state.insert(action, state);
+            received_player_input |= state && action.ends_turn();
         }
 
         // The "Big Three" modifier keys
         self.modifiers[0] = keys.any_pressed([KeyCode::ShiftLeft, KeyCode::ShiftRight]);
         self.modifiers[1] = keys.any_pressed([KeyCode::ControlLeft, KeyCode::ControlRight]);
         self.modifiers[2] = keys.any_pressed([KeyCode::AltLeft, KeyCode::AltRight]);
+
+        received_player_input
     }
 }
 
@@ -111,6 +125,12 @@ impl Default for Actions {
 }
 
 /// Update the [`Actions`] resource based on key presses
-pub fn update_actions(mut actions: ResMut<Actions>, keys: Res<Input<KeyCode>>) {
-    actions.update(keys.as_ref());
+pub fn update_actions(
+    mut actions: ResMut<Actions>,
+    keys: Res<Input<KeyCode>>,
+    mut next_state: ResMut<NextState<TurnState>>,
+) {
+    if actions.update(keys.as_ref()) {
+        next_state.0 = Some(TurnState::PlayerTurn);
+    }
 }

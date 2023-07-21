@@ -23,6 +23,14 @@ pub enum GameState {
     Running,
 }
 
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash, States)]
+pub enum TurnState {
+    #[default]
+    WaitingForPlayer,
+    PlayerTurn,
+    MonsterTurn,
+}
+
 fn state_manager(state: Res<State<GameState>>, mut next_state: ResMut<NextState<GameState>>) {
     // FIXME: Temporary system to "skip" states we're not utilizing yet
     #[allow(clippy::single_match)]
@@ -35,8 +43,13 @@ fn state_manager(state: Res<State<GameState>>, mut next_state: ResMut<NextState<
     };
 
     if let Some(next) = next_state.0 {
-        println!("Switching from {state:?} to state {next:?}");
+        info!("Switching from {state:?} to state {next:?}");
     }
+}
+
+fn skip_monster_turn(mut next_state: ResMut<NextState<TurnState>>) {
+    warn!("Skipping monster turn!");
+    next_state.0 = Some(TurnState::WaitingForPlayer);
 }
 
 /// Run the game
@@ -54,7 +67,12 @@ pub fn run() {
         .add_systems(Update, bevy::window::close_on_esc)
         // Begin game configuration
         .add_state::<GameState>()
+        .add_state::<TurnState>()
         .add_systems(Update, state_manager)
+        .add_systems(
+            Update,
+            skip_monster_turn.run_if(in_state(TurnState::MonsterTurn)),
+        )
         .add_systems(
             Update,
             fieldofview::update_fov.run_if(in_state(GameState::Running)),
