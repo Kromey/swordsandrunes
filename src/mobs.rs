@@ -26,12 +26,16 @@ impl MobList {
 
     pub fn spawn<S: AsRef<str>>(
         &self,
-        mob: S,
+        mob_name: S,
         commands: &mut Commands,
         asset_server: &AssetServer,
     ) -> Entity {
-        let id = self.names.get(mob.as_ref()).unwrap();
-        self.mobs[*id].spawn(commands, asset_server)
+        let id = self.names.get(mob_name.as_ref()).unwrap();
+        let mob = self.mobs[*id].spawn(commands, asset_server);
+        commands
+            .entity(mob)
+            .insert(Name::new(mob_name.as_ref().to_owned()));
+        mob
     }
 }
 
