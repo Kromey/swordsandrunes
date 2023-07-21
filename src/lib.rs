@@ -4,6 +4,7 @@ use bevy::{
     DefaultPlugins,
 };
 
+pub mod bump;
 pub mod camera;
 pub mod dungeon;
 pub mod fieldofview;
@@ -77,10 +78,13 @@ pub fn run() {
             Update,
             fieldofview::update_fov.run_if(in_state(GameState::Running)),
         )
-        .add_plugins(camera::CameraPlugin)
-        .add_plugins(dungeon::DungeonPlugin)
-        .add_plugins(input_manager::InputManagerPlugin)
-        .add_plugins(movement::MovementPlugin)
-        .add_plugins(setup::SetupPlugin)
+        .add_plugins((
+            bump::BumpPlugin,
+            camera::CameraPlugin,
+            dungeon::DungeonPlugin,
+            input_manager::InputManagerPlugin,
+            movement::MovementPlugin,
+            setup::SetupPlugin,
+        ))
         .run();
 }
