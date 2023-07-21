@@ -6,6 +6,7 @@ use bevy::{
 
 pub mod bump;
 pub mod camera;
+pub mod combat;
 pub mod dungeon;
 pub mod fieldofview;
 pub mod input_manager;
@@ -80,6 +81,7 @@ pub fn run() {
         .add_plugins((
             bump::BumpPlugin,
             camera::CameraPlugin,
+            combat::CombatPlugin,
             dungeon::DungeonPlugin,
             input_manager::InputManagerPlugin,
             movement::MovementPlugin,

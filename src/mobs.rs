@@ -2,7 +2,11 @@ use bevy::prelude::*;
 use serde::Deserialize;
 use std::{collections::HashMap, fs::read_to_string, path::PathBuf};
 
-use crate::{dungeon::BlocksMovement, utils::get_dat_path};
+use crate::{
+    combat::{Defense, Power, HP},
+    dungeon::BlocksMovement,
+    utils::get_dat_path,
+};
 
 /// Marker component for mobs
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component)]
@@ -57,6 +61,10 @@ pub struct MobData {
     sprite: String,
     #[serde(default = "default_blocks_movement")]
     blocks_movement: bool,
+    #[serde(alias = "HP", alias = "hit_points")]
+    hp: u8,
+    defense: u8,
+    power: u8,
 }
 
 impl MobData {
@@ -66,6 +74,9 @@ impl MobData {
                 texture: asset_server.load(self.sprite()),
                 ..Default::default()
             },
+            HP::new(self.hp),
+            Defense(self.defense),
+            Power(self.power),
             Mob,
         ));
 

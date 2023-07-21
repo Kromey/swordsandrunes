@@ -2,7 +2,13 @@ use bevy::prelude::*;
 use rand::{seq::IteratorRandom, Rng, SeedableRng};
 use rand_xoshiro::Xoshiro512StarStar;
 
-use crate::{camera::PrimaryCamera, dungeon::generate_dungeon, mobs::MobList, GameState};
+use crate::{
+    camera::PrimaryCamera,
+    combat::{Defense, Power, HP},
+    dungeon::generate_dungeon,
+    mobs::MobList,
+    GameState,
+};
 
 #[derive(Debug, Default, Clone, Copy, Component)]
 pub struct Player;
@@ -42,6 +48,9 @@ fn setup_game(
             transform: player_start.as_transform(1.0),
             ..Default::default()
         },
+        HP::new(30),
+        Defense(2),
+        Power(5),
         Name::new("The Player"),
         Player,
     ));
