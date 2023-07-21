@@ -62,9 +62,9 @@ pub struct MobData {
     #[serde(default = "default_blocks_movement")]
     blocks_movement: bool,
     #[serde(alias = "HP", alias = "hit_points")]
-    hp: u8,
-    defense: u8,
-    power: u8,
+    hp: u16,
+    defense: u16,
+    power: u16,
 }
 
 impl MobData {

@@ -25,31 +25,31 @@ impl From<&BumpEvent> for AttackEvent {
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Component)]
 pub struct HP {
-    current: u8,
-    max: u8,
+    current: u16,
+    max: u16,
 }
 
 impl HP {
-    pub fn new(hp: u8) -> Self {
+    pub fn new(hp: u16) -> Self {
         Self {
             current: hp,
             max: hp,
         }
     }
 
-    pub fn current(&self) -> u8 {
+    pub fn current(&self) -> u16 {
         self.current
     }
 
-    pub fn max(&self) -> u8 {
+    pub fn max(&self) -> u16 {
         self.max
     }
 
-    pub fn add(&mut self, value: u8) {
+    pub fn add(&mut self, value: u16) {
         self.current = min(self.max, self.current.saturating_add(value));
     }
 
-    pub fn sub(&mut self, value: u8) {
+    pub fn sub(&mut self, value: u16) {
         self.current = self.current.saturating_sub(value);
     }
 }
@@ -57,15 +57,15 @@ impl HP {
 #[derive(
     Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Component, Deref, DerefMut,
 )]
-pub struct Power(pub u8);
+pub struct Power(pub u16);
 
 #[derive(
     Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Component, Deref, DerefMut,
 )]
-pub struct Defense(pub u8);
+pub struct Defense(pub u16);
 
 impl std::ops::Sub<Defense> for Power {
-    type Output = u8;
+    type Output = u16;
 
     fn sub(self, rhs: Defense) -> Self::Output {
         self.0.saturating_sub(rhs.0)
@@ -73,7 +73,7 @@ impl std::ops::Sub<Defense> for Power {
 }
 
 impl std::ops::Sub<&Defense> for &Power {
-    type Output = u8;
+    type Output = u16;
 
     fn sub(self, rhs: &Defense) -> Self::Output {
         self.0.saturating_sub(rhs.0)
