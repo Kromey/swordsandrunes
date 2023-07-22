@@ -1,6 +1,11 @@
-use crate::bump::{bump_system, BumpEvent};
+use crate::{
+    bump::{bump_system, BumpEvent},
+    dungeon::TILE_SIZE_F32,
+};
 use bevy::prelude::*;
-use std::cmp::min;
+use rand::{Rng, SeedableRng};
+use rand_xoshiro::Xoshiro512StarStar;
+use std::{cmp::min, f32::consts::TAU};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Event)]
 pub struct AttackEvent {
@@ -21,6 +26,12 @@ impl From<&BumpEvent> for AttackEvent {
     fn from(bump: &BumpEvent) -> Self {
         Self::from(*bump)
     }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Event)]
+pub struct DamageEvent {
+    entity: Entity,
+    damage: u16,
 }
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Component)]
@@ -84,13 +95,51 @@ fn attack_system(
     attacker_qry: Query<&Power>,
     mut defender_qry: Query<(&mut HP, &Defense)>,
     mut attack_events: EventReader<AttackEvent>,
+    mut damage_event: EventWriter<DamageEvent>,
 ) {
     for attack in attack_events.iter() {
         if let Ok(power) = attacker_qry.get(attack.attacker) {
             if let Ok((mut hp, defense)) = defender_qry.get_mut(attack.target) {
                 let damage = power - defense;
-                hp.sub(damage);
+
+                if damage > 0 {
+                    hp.sub(damage);
+                    damage_event.send(DamageEvent {
+                        entity: attack.target,
+                        damage,
+                    });
+                }
             }
+        }
+    }
+}
+
+fn blood_fx_system(
+    mut damage_event: EventReader<DamageEvent>,
+    transform_qry: Query<&Transform>,
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+) {
+    let mut rng = Xoshiro512StarStar::from_entropy();
+    for event in damage_event.iter() {
+        if let Ok(transform) = transform_qry.get(event.entity) {
+            let scale = rng.gen_range(0.3..1.0);
+            let rot = rng.gen_range(0.0..TAU);
+            let displace = rng.gen_range(0.0..(TILE_SIZE_F32 / 2.0));
+            let displace_rot = rng.gen_range(0.0..TAU);
+            let blood = format!("sprites/blood/blood_red{:02}.png", rng.gen_range(0..30));
+
+            let mut transform = *transform;
+            transform.translation += Vec2::from_angle(displace_rot).extend(0.0) * displace;
+            transform.translation.z = 0.5; // Above tiles, below mobs
+            transform.rotate_z(rot);
+            transform.scale = Vec3::splat(scale);
+
+            commands.spawn((SpriteBundle {
+                texture: asset_server.load(blood),
+                transform,
+                ..Default::default()
+            },));
         }
     }
 }
@@ -116,9 +165,14 @@ pub struct CombatPlugin;
 
 impl Plugin for CombatPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<AttackEvent>().add_systems(
-            Update,
-            (attack_system, death_system).chain().after(bump_system),
-        );
+        app.add_event::<AttackEvent>()
+            .add_event::<DamageEvent>()
+            .add_systems(
+                Update,
+                (
+                    (attack_system, death_system).chain().after(bump_system),
+                    blood_fx_system,
+                ),
+            );
     }
 }
