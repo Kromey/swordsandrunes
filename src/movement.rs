@@ -9,7 +9,7 @@ use crate::{
 };
 
 #[allow(clippy::type_complexity)]
-pub fn movement_system(
+pub fn movement(
     actions: Res<Actions>,
     mut player_qry: Query<(Entity, &mut Transform), With<Player>>,
     blockers_qry: Query<(Entity, &Transform), (With<BlocksMovement>, Without<Player>)>,
@@ -61,7 +61,7 @@ impl Plugin for MovementPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            movement_system
+            movement
                 .after(InputManager)
                 .run_if(in_state(TurnState::PlayerTurn)),
         );

@@ -1,5 +1,5 @@
 use crate::{
-    bump::{bump_system, BumpEvent},
+    bump::{handle_bumps, BumpEvent},
     dungeon::TILE_SIZE_F32,
 };
 use bevy::prelude::*;
@@ -91,7 +91,7 @@ impl std::ops::Sub<&Defense> for &Power {
     }
 }
 
-fn attack_system(
+fn attack(
     attacker_qry: Query<&Power>,
     mut defender_qry: Query<(&mut HP, &Defense)>,
     mut attack_events: EventReader<AttackEvent>,
@@ -114,7 +114,7 @@ fn attack_system(
     }
 }
 
-fn blood_fx_system(
+fn splatter_blood(
     mut damage_event: EventReader<DamageEvent>,
     transform_qry: Query<&Transform>,
     mut commands: Commands,
@@ -144,10 +144,7 @@ fn blood_fx_system(
     }
 }
 
-fn death_system(
-    dead_qry: Query<(Entity, &HP, Option<&Name>), Changed<HP>>,
-    mut commands: Commands,
-) {
+fn remove_dead(dead_qry: Query<(Entity, &HP, Option<&Name>), Changed<HP>>, mut commands: Commands) {
     for (entity, hp, name) in dead_qry.iter() {
         if hp.current() == 0 {
             if let Some(name) = name {
@@ -170,8 +167,8 @@ impl Plugin for CombatPlugin {
             .add_systems(
                 Update,
                 (
-                    (attack_system, death_system).chain().after(bump_system),
-                    blood_fx_system,
+                    (attack, remove_dead).chain().after(handle_bumps),
+                    splatter_blood,
                 ),
             );
     }

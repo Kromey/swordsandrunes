@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{combat::AttackEvent, dungeon::Tile, movement::movement_system, TurnState};
+use crate::{combat::AttackEvent, dungeon::Tile, movement::movement, TurnState};
 
 #[derive(Debug, Clone, Copy, Event)]
 pub struct BumpEvent {
@@ -14,7 +14,7 @@ impl BumpEvent {
     }
 }
 
-pub fn bump_system(
+pub fn handle_bumps(
     mut bumps: EventReader<BumpEvent>,
     mut next_state: ResMut<NextState<TurnState>>,
     tile_qry: Query<Entity, With<Tile>>,
@@ -51,6 +51,6 @@ pub struct BumpPlugin;
 impl Plugin for BumpPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<BumpEvent>()
-            .add_systems(Update, bump_system.after(movement_system));
+            .add_systems(Update, handle_bumps.after(movement));
     }
 }
