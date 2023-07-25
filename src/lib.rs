@@ -84,6 +84,7 @@ pub fn run() {
             combat::CombatPlugin,
             dungeon::DungeonPlugin,
             input_manager::InputManagerPlugin,
+            mobs::MobsPlugin,
             movement::MovementPlugin,
             setup::SetupPlugin,
         ))

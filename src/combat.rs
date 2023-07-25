@@ -28,6 +28,12 @@ impl From<&BumpEvent> for AttackEvent {
     }
 }
 
+impl AttackEvent {
+    pub fn new(attacker: Entity, target: Entity) -> Self {
+        Self { attacker, target }
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Event)]
 pub struct DamageEvent {
     entity: Entity,

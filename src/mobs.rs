@@ -1,11 +1,14 @@
-use bevy::prelude::*;
+use bevy::{prelude::*, utils::HashSet};
 use serde::Deserialize;
 use std::{collections::HashMap, fs::read_to_string, path::PathBuf};
 
 use crate::{
-    combat::{Defense, Power, HP},
-    dungeon::BlocksMovement,
+    combat::{AttackEvent, Defense, Power, HP},
+    dungeon::{BlocksMovement, Map, TilePos},
+    fieldofview::FieldOfView,
+    setup::Player,
     utils::get_dat_path,
+    TurnState,
 };
 
 /// Marker component for mobs
@@ -94,4 +97,57 @@ impl MobData {
 
 fn default_blocks_movement() -> bool {
     true
+}
+
+#[allow(clippy::type_complexity)]
+fn monster_ai(
+    map: Res<Map>,
+    fov_qry: Query<&FieldOfView>,
+    mut monster_qry: Query<(Entity, &mut Transform), With<Mob>>,
+    player_qry: Query<(Entity, &Transform), (With<Player>, Without<Mob>)>,
+    mut attack: EventWriter<AttackEvent>,
+    walkable_qry: Query<&Transform, (Without<BlocksMovement>, Without<Mob>)>,
+) {
+    // Get the player's position first to avoid looking this up repeatedly
+    if let Ok((player, player_pos)) = player_qry.get_single() {
+        let player_tile = TilePos::from(player_pos);
+
+        let walkable: HashSet<_> = walkable_qry.iter().map(TilePos::from).collect();
+
+        for (monster, mut monster_pos) in monster_qry.iter_mut() {
+            let monster_tile = TilePos::from(*monster_pos);
+
+            if let Some(tile_entity) = map.get(monster_tile) {
+                if let Ok(&FieldOfView::Visible) = fov_qry.get(tile_entity) {
+                    if monster_tile.distance(player_tile) <= 1 {
+                        attack.send(AttackEvent::new(monster, player));
+                    } else if let Some((path, _)) = pathfinding::directed::astar::astar(
+                        &monster_tile,
+                        |tile| {
+                            map.neighbors_of(*tile).into_iter().filter_map(|tile| {
+                                if walkable.contains(&tile) {
+                                    Some((tile, 1))
+                                } else {
+                                    None
+                                }
+                            })
+                        },
+                        |tile| tile.distance(player_tile),
+                        |tile| *tile == player_tile,
+                    ) {
+                        *monster_pos = path[1].as_transform(monster_pos.translation.z);
+                    }
+                }
+            }
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct MobsPlugin;
+
+impl Plugin for MobsPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_systems(Update, monster_ai.run_if(in_state(TurnState::MonsterTurn)));
+    }
 }

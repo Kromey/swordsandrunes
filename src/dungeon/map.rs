@@ -95,6 +95,53 @@ impl Map {
         }
     }
 
+    pub fn neighbors_of(&self, pos: TilePos) -> Vec<TilePos> {
+        let mut neighbors = Vec::with_capacity(8);
+
+        let north = pos + TilePos::new(0, 1);
+        if self.size.in_bounds(north) {
+            neighbors.push(north);
+        }
+        let east = pos + TilePos::new(1, 0);
+        if self.size.in_bounds(east) {
+            neighbors.push(east);
+        }
+        // South
+        if pos.y > 0 {
+            neighbors.push(pos - TilePos::new(0, 1));
+        }
+        // West
+        if pos.x > 0 {
+            neighbors.push(pos - TilePos::new(1, 0));
+        }
+
+        let northeast = pos + TilePos::new(1, 1);
+        if self.size.in_bounds(northeast) {
+            neighbors.push(northeast);
+        }
+
+        // Southeast
+        if pos.y > 0 {
+            let southeast = pos - TilePos::new(0, 1) + TilePos::new(1, 0);
+            if self.size.in_bounds(southeast) {
+                neighbors.push(southeast);
+            }
+        }
+        // Southwest
+        if pos.y > 0 && pos.x > 0 {
+            neighbors.push(pos - TilePos::new(1, 1));
+        }
+        // Northwest
+        if pos.x > 0 {
+            let northwest = pos - TilePos::new(1, 0) + TilePos::new(0, 1);
+            if self.size.in_bounds(northwest) {
+                neighbors.push(northwest);
+            }
+        }
+
+        neighbors
+    }
+
     pub fn iter_rooms(&self) -> impl Iterator<Item = &RectangularRoom> {
         self.rooms.rooms()
     }
