@@ -1,8 +1,7 @@
-use bevy::prelude::*;
-
-use crate::dungeon::MapSize;
-
 use super::TILE_SIZE;
+use crate::dungeon::MapSize;
+use bevy::prelude::*;
+use std::cmp::max;
 
 /// Position in terms of tiles
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash, Component)]
@@ -16,9 +15,9 @@ impl TilePos {
         Self { x, y }
     }
 
-    /// Manhattan distance from this position to another
+    /// Chebyshev distance from this position to another
     pub fn distance(&self, other: TilePos) -> u32 {
-        self.x.abs_diff(other.x) + self.y.abs_diff(other.y)
+        max(self.x.abs_diff(other.x), self.y.abs_diff(other.y))
     }
 
     pub fn from_index(idx: usize, size: MapSize) -> Self {
