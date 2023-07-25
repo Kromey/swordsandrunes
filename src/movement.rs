@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{
     bump::BumpEvent,
     dungeon::{BlocksMovement, TilePos, TILE_SIZE_F32},
-    input_manager::{Actions, InputManager},
+    input_manager::{Action, Actions, InputManager},
     setup::Player,
     TurnState,
 };
@@ -18,16 +18,28 @@ pub fn movement(
 ) {
     let mut delta = Vec2::ZERO;
 
-    if actions.perform(crate::input_manager::Action::WalkNorth) {
+    if actions.perform(Action::WalkNorth)
+        || actions.perform(Action::WalkNortheast)
+        || actions.perform(Action::WalkNorthwest)
+    {
         delta += Vec2::Y;
     }
-    if actions.perform(crate::input_manager::Action::WalkEast) {
+    if actions.perform(Action::WalkEast)
+        || actions.perform(Action::WalkNortheast)
+        || actions.perform(Action::WalkSoutheast)
+    {
         delta += Vec2::X;
     }
-    if actions.perform(crate::input_manager::Action::WalkSouth) {
+    if actions.perform(Action::WalkSouth)
+        || actions.perform(Action::WalkSoutheast)
+        || actions.perform(Action::WalkSouthwest)
+    {
         delta += Vec2::NEG_Y;
     }
-    if actions.perform(crate::input_manager::Action::WalkWest) {
+    if actions.perform(Action::WalkWest)
+        || actions.perform(Action::WalkSouthwest)
+        || actions.perform(Action::WalkNorthwest)
+    {
         delta += Vec2::NEG_X;
     }
 

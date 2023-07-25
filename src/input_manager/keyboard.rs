@@ -27,6 +27,14 @@ pub enum Action {
     WalkSouth,
     /// Walk west
     WalkWest,
+    /// Walk northeast
+    WalkNortheast,
+    /// Walk southeast
+    WalkSoutheast,
+    /// Walk southwest
+    WalkSouthwest,
+    /// Walk northwest
+    WalkNorthwest,
     /// Zoom out
     ZoomOut,
     /// Zoom In
@@ -47,7 +55,17 @@ impl Action {
     const fn ends_turn(&self) -> bool {
         use Action::*;
 
-        matches!(*self, WalkNorth | WalkEast | WalkWest | WalkSouth)
+        matches!(
+            *self,
+            WalkNorth
+                | WalkEast
+                | WalkWest
+                | WalkSouth
+                | WalkNortheast
+                | WalkSoutheast
+                | WalkSouthwest
+                | WalkNorthwest
+        )
     }
 }
 

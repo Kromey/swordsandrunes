@@ -8,19 +8,35 @@ key = "F3"
 
 [[bind]]
 action = "WalkNorth"
-keys = ["W", "Numpad8", "Up"]
+keys = ["K", "Numpad8"]
 
 [[bind]]
 action = "WalkEast"
-keys = ["D", "Numpad6", "Right"]
+keys = ["L", "Numpad6"]
 
 [[bind]]
 action = "WalkSouth"
-keys = ["S", "Numpad2", "Down"]
+keys = ["J", "Numpad2"]
 
 [[bind]]
 action = "WalkWest"
-keys = ["A", "Numpad4", "Left"]
+keys = ["H", "Numpad4"]
+
+[[bind]]
+action = "WalkNortheast"
+keys = ["I", "Numpad9"]
+
+[[bind]]
+action = "WalkSoutheast"
+keys = ["M", "Numpad3"]
+
+[[bind]]
+action = "WalkSouthwest"
+keys = ["N", "Numpad1"]
+
+[[bind]]
+action = "WalkNorthwest"
+keys = ["U", "Numpad7"]
 
 [[bind]]
 action = "ZoomOut"
