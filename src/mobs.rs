@@ -107,6 +107,7 @@ fn monster_ai(
     player_qry: Query<(Entity, &Transform), (With<Player>, Without<Mob>)>,
     mut attack: EventWriter<AttackEvent>,
     walkable_qry: Query<&Transform, (Without<BlocksMovement>, Without<Mob>)>,
+    mut next_state: ResMut<NextState<TurnState>>,
 ) {
     // Get the player's position first to avoid looking this up repeatedly
     if let Ok((player, player_pos)) = player_qry.get_single() {
@@ -141,6 +142,9 @@ fn monster_ai(
             }
         }
     }
+
+    // End the monsters' turn
+    next_state.0 = Some(TurnState::WaitingForPlayer);
 }
 
 #[derive(Debug)]

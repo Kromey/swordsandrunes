@@ -49,11 +49,6 @@ fn state_manager(state: Res<State<GameState>>, mut next_state: ResMut<NextState<
     }
 }
 
-fn skip_monster_turn(mut next_state: ResMut<NextState<TurnState>>) {
-    warn!("Skipping monster turn!");
-    next_state.0 = Some(TurnState::WaitingForPlayer);
-}
-
 /// Run the game
 pub fn run() {
     App::new()
@@ -74,7 +69,6 @@ pub fn run() {
             Update,
             (
                 state_manager,
-                skip_monster_turn.run_if(in_state(TurnState::MonsterTurn)),
                 fieldofview::update_fov.run_if(in_state(GameState::Running)),
             ),
         )
