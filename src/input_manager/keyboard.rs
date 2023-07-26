@@ -149,6 +149,6 @@ pub fn update_actions(
     mut next_state: ResMut<NextState<TurnState>>,
 ) {
     if actions.update(keys.as_ref()) {
-        next_state.0 = Some(TurnState::PlayerTurn);
+        next_state.set(TurnState::PlayerTurn);
     }
 }

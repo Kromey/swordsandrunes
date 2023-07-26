@@ -60,7 +60,7 @@ pub fn movement(
                 transform.translation = dest.as_vec().extend(transform.translation.z);
 
                 // We did our move, end our turn
-                next_state.0 = Some(TurnState::MonsterTurn);
+                next_state.set(TurnState::MonsterTurn);
             }
         }
     }

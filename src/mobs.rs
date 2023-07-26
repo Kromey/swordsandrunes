@@ -144,7 +144,7 @@ fn monster_ai(
     }
 
     // End the monsters' turn
-    next_state.0 = Some(TurnState::WaitingForPlayer);
+    next_state.set(TurnState::WaitingForPlayer);
 }
 
 #[derive(Debug)]

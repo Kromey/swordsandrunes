@@ -24,7 +24,7 @@ pub fn handle_bumps(
         if tile_qry.contains(bump.target) {
             // Bumped into a tile, do nothing
             // For now we just go back to waiting for player input
-            next_state.0 = Some(TurnState::WaitingForPlayer);
+            next_state.set(TurnState::WaitingForPlayer);
 
             // NOTE: This might be a bug if somehow we can have multiple
             // bump events in a single frame
@@ -42,7 +42,7 @@ pub fn handle_bumps(
         // }
 
         // We've handled the bump, move to the monster's turn
-        next_state.0 = Some(TurnState::MonsterTurn);
+        next_state.set(TurnState::MonsterTurn);
     }
 }
 
