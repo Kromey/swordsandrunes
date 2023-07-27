@@ -62,6 +62,14 @@ impl HP {
         self.max
     }
 
+    pub fn ratio(&self) -> f32 {
+        self.current as f32 / self.max as f32
+    }
+
+    pub fn percent(&self) -> f32 {
+        self.ratio() * 100.0
+    }
+
     pub fn add(&mut self, value: u16) {
         self.current = min(self.max, self.current.saturating_add(value));
     }
