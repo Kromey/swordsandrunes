@@ -7,7 +7,7 @@ use crate::{
     combat::{Defense, Power, HP},
     dungeon::generate_dungeon,
     mobs::MobList,
-    GameState,
+    GameState, TurnState,
 };
 
 #[derive(Debug, Default, Clone, Copy, Component)]
@@ -64,12 +64,18 @@ fn load_raws(mut commands: Commands) {
     commands.insert_resource(mobs);
 }
 
+/// Ensure the game starts ready for the player to choose their first action
+fn start_turn(mut next_state: ResMut<NextState<TurnState>>) {
+    next_state.set(TurnState::WaitingForPlayer);
+}
+
 #[derive(Debug, Default)]
 pub struct SetupPlugin;
 
 impl Plugin for SetupPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, setup_game.run_if(in_state(GameState::Setup)))
-            .add_systems(Startup, load_raws);
+        app.add_systems(Startup, load_raws)
+            .add_systems(Update, setup_game.run_if(in_state(GameState::Setup)))
+            .add_systems(OnExit(GameState::Setup), start_turn);
     }
 }
