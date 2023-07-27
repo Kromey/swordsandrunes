@@ -8,6 +8,7 @@ pub mod bump;
 pub mod camera;
 pub mod combat;
 pub mod dungeon;
+pub mod dungeon_ui;
 pub mod fieldofview;
 pub mod input_manager;
 pub mod mobs;
@@ -77,6 +78,7 @@ pub fn run() {
             camera::CameraPlugin,
             combat::CombatPlugin,
             dungeon::DungeonPlugin,
+            dungeon_ui::DungeonUIPlugin,
             input_manager::InputManagerPlugin,
             mobs::MobsPlugin,
             movement::MovementPlugin,
