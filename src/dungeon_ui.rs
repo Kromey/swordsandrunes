@@ -1,6 +1,13 @@
 use bevy::prelude::*;
 
-use crate::{combat::HP, setup::Player, GameState};
+use crate::{
+    camera::PrimaryCamera,
+    combat::HP,
+    dungeon::{Map, Tile, TilePos},
+    fieldofview::FieldOfView,
+    setup::Player,
+    GameState,
+};
 
 pub mod messages;
 pub use messages::Messages;
@@ -13,6 +20,9 @@ pub struct HPBar;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component)]
 pub struct MessageLog;
+
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component)]
+pub struct LookingAt;
 
 fn spawn_dungeon_ui(
     mut commands: Commands,
@@ -127,14 +137,18 @@ fn spawn_dungeon_ui(
                         });
 
                     // === Right panel ===
-                    parent.spawn(NodeBundle {
-                        style: Style {
-                            height: Val::Percent(100.0),
-                            width: Val::Px(320.0),
+                    parent
+                        .spawn(NodeBundle {
+                            style: Style {
+                                height: Val::Percent(100.0),
+                                width: Val::Px(320.0),
+                                ..Default::default()
+                            },
                             ..Default::default()
-                        },
-                        ..Default::default()
-                    });
+                        })
+                        .with_children(|parent| {
+                            parent.spawn((TextBundle::default(), LookingAt));
+                        });
                 });
         });
 }
@@ -178,6 +192,63 @@ fn update_message_log(
     }
 }
 
+fn update_looking_at(
+    mut cursor_evt: EventReader<CursorMoved>,
+    mut ui_text_qry: Query<&mut Text, With<LookingAt>>,
+    camera_qry: Query<(&Camera, &GlobalTransform), With<PrimaryCamera>>,
+    tile_qry: Query<(&Name, &FieldOfView), With<Tile>>,
+    names_qry: Query<(&Name, &Transform), Without<Tile>>,
+    map: Res<Map>,
+    asset_server: Res<AssetServer>,
+) {
+    if let Some(cursor) = cursor_evt.iter().last() {
+        let (camera, camera_transform) = camera_qry.single();
+        if let Some(world_position) = camera.viewport_to_world_2d(camera_transform, cursor.position)
+        {
+            let tile = TilePos::from(world_position);
+            let mut names = Vec::new();
+
+            if let Some((tile_name, fov)) = map
+                .get(tile)
+                .and_then(|tile_entity| tile_qry.get(tile_entity).ok())
+            {
+                if *fov != FieldOfView::Unexplored {
+                    names.push(tile_name);
+                }
+
+                if *fov == FieldOfView::Visible {
+                    names.extend(names_qry.iter().filter_map(|(name, transform)| {
+                        let pos = TilePos::from(transform);
+                        if pos == tile {
+                            Some(name)
+                        } else {
+                            None
+                        }
+                    }));
+                }
+            }
+
+            let mut text = ui_text_qry.single_mut();
+            let font_handle = asset_server.load("fonts/FiraMono-Medium.ttf");
+            text.sections = names
+                .into_iter()
+                .map(|name| {
+                    let mut name = name.as_str().to_owned();
+                    name.push('\n');
+                    TextSection {
+                        value: name,
+                        style: TextStyle {
+                            font: font_handle.clone(),
+                            font_size: 32.0,
+                            color: Color::WHITE,
+                        },
+                    }
+                })
+                .collect();
+        }
+    }
+}
+
 fn despawn_dungeon_ui(mut commands: Commands, dungeon_ui_qry: Query<Entity, With<DungeonUI>>) {
     if let Ok(dungeon_ui) = dungeon_ui_qry.get_single() {
         commands.entity(dungeon_ui).despawn_recursive();
@@ -194,7 +265,8 @@ impl Plugin for DungeonUIPlugin {
             .add_systems(OnExit(GameState::Running), despawn_dungeon_ui)
             .add_systems(
                 Update,
-                (update_hp, update_message_log).run_if(in_state(GameState::Running)),
+                (update_hp, update_message_log, update_looking_at)
+                    .run_if(in_state(GameState::Running)),
             );
     }
 }
