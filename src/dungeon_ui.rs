@@ -2,13 +2,23 @@ use bevy::prelude::*;
 
 use crate::{combat::HP, setup::Player, GameState};
 
+pub mod messages;
+pub use messages::Messages;
+
 #[derive(Debug, Default, Component)]
 pub struct DungeonUI;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component)]
 pub struct HPBar;
 
-fn spawn_dungeon_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component)]
+pub struct MessageLog;
+
+fn spawn_dungeon_ui(
+    mut commands: Commands,
+    asset_server: Res<AssetServer>,
+    messages: Res<Messages>,
+) {
     commands
         .spawn((
             NodeBundle {
@@ -94,14 +104,27 @@ fn spawn_dungeon_ui(mut commands: Commands, asset_server: Res<AssetServer>) {
                         });
 
                     // === Center panel ===
-                    parent.spawn(NodeBundle {
-                        style: Style {
-                            height: Val::Percent(100.0),
-                            flex_grow: 1.0,
+                    parent
+                        .spawn(NodeBundle {
+                            style: Style {
+                                height: Val::Percent(100.0),
+                                flex_grow: 1.0,
+                                ..Default::default()
+                            },
                             ..Default::default()
-                        },
-                        ..Default::default()
-                    });
+                        })
+                        .with_children(|parent| {
+                            parent.spawn((
+                                TextBundle::from_sections(
+                                    messages
+                                        .text_sections_rev(
+                                            asset_server.load("fonts/FiraMono-Medium.ttf"),
+                                        )
+                                        .take(5),
+                                ),
+                                MessageLog,
+                            ));
+                        });
 
                     // === Right panel ===
                     parent.spawn(NodeBundle {
@@ -140,6 +163,21 @@ fn update_hp(
     }
 }
 
+fn update_message_log(
+    messages: Res<Messages>,
+    mut message_log_qry: Query<&mut Text, With<MessageLog>>,
+    asset_server: Res<AssetServer>,
+) {
+    if messages.is_changed() {
+        if let Ok(mut message_log) = message_log_qry.get_single_mut() {
+            message_log.sections = messages
+                .text_sections_rev(asset_server.load("fonts/FiraMono-Medium.ttf"))
+                .take(5)
+                .collect();
+        }
+    }
+}
+
 fn despawn_dungeon_ui(mut commands: Commands, dungeon_ui_qry: Query<Entity, With<DungeonUI>>) {
     if let Ok(dungeon_ui) = dungeon_ui_qry.get_single() {
         commands.entity(dungeon_ui).despawn_recursive();
@@ -151,8 +189,12 @@ pub struct DungeonUIPlugin;
 
 impl Plugin for DungeonUIPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(OnEnter(GameState::Running), spawn_dungeon_ui)
+        app.init_resource::<Messages>()
+            .add_systems(OnEnter(GameState::Running), spawn_dungeon_ui)
             .add_systems(OnExit(GameState::Running), despawn_dungeon_ui)
-            .add_systems(Update, update_hp.run_if(in_state(GameState::Running)));
+            .add_systems(
+                Update,
+                (update_hp, update_message_log).run_if(in_state(GameState::Running)),
+            );
     }
 }

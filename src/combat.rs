@@ -1,6 +1,7 @@
 use crate::{
     bump::{handle_bumps, BumpEvent},
     dungeon::TILE_SIZE_F32,
+    dungeon_ui::Messages,
 };
 use bevy::prelude::*;
 use rand::{Rng, SeedableRng};
@@ -106,17 +107,29 @@ impl std::ops::Sub<&Defense> for &Power {
 }
 
 fn attack(
-    attacker_qry: Query<&Power>,
-    mut defender_qry: Query<(&mut HP, &Defense)>,
+    attacker_qry: Query<(&Power, Option<&Name>)>,
+    mut defender_qry: Query<(&mut HP, &Defense, Option<&Name>)>,
     mut attack_events: EventReader<AttackEvent>,
     mut damage_event: EventWriter<DamageEvent>,
+    mut messages: ResMut<Messages>,
 ) {
     for attack in attack_events.iter() {
-        if let Ok(power) = attacker_qry.get(attack.attacker) {
-            if let Ok((mut hp, defense)) = defender_qry.get_mut(attack.target) {
+        if let Ok((power, attacker)) = attacker_qry.get(attack.attacker) {
+            if let Ok((mut hp, defense, defender)) = defender_qry.get_mut(attack.target) {
                 let damage = power - defense;
 
                 if damage > 0 {
+                    if let (Some(attacker), Some(defender)) = (attacker, defender) {
+                        let message =
+                            format!("{attacker} attacks {defender} for {damage} hit points.");
+                        if attacker.as_str() == "Player" {
+                            messages.add_friendly(message);
+                        } else if defender.as_str() == "Player" {
+                            messages.add_hostile(message);
+                        } else {
+                            messages.add_notice(message);
+                        }
+                    }
                     hp.sub(damage);
                     damage_event.send(DamageEvent {
                         entity: attack.target,
@@ -158,13 +171,19 @@ fn splatter_blood(
     }
 }
 
-fn remove_dead(dead_qry: Query<(Entity, &HP, Option<&Name>), Changed<HP>>, mut commands: Commands) {
+fn remove_dead(
+    dead_qry: Query<(Entity, &HP, Option<&Name>), Changed<HP>>,
+    mut commands: Commands,
+    mut messages: ResMut<Messages>,
+) {
     for (entity, hp, name) in dead_qry.iter() {
         if hp.current() == 0 {
             if let Some(name) = name {
-                info!("Killed {name}");
-            } else {
-                info!("Killed {entity:?}");
+                if name.as_str() == "Player" {
+                    messages.add_hostile("YOU DIED!");
+                } else {
+                    messages.add_notice(format!("{name} is dead!"));
+                }
             }
             commands.entity(entity).despawn();
         }

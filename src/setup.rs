@@ -51,7 +51,7 @@ fn setup_game(
         HP::new(30),
         Defense(2),
         Power(5),
-        Name::new("The Player"),
+        Name::new("Player"),
         Player,
     ));
 
