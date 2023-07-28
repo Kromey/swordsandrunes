@@ -510,8 +510,10 @@ dependencies = [
  "bevy_scene",
  "bevy_sprite",
  "bevy_tasks",
+ "bevy_text",
  "bevy_time",
  "bevy_transform",
+ "bevy_ui",
  "bevy_utils",
  "bevy_window",
  "bevy_winit",
@@ -727,6 +729,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "bevy_text"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b52a19b3d0caf20acd1bdb47b6a00717accc834b46c4f204a63de15cea45ec4b"
+dependencies = [
+ "ab_glyph",
+ "anyhow",
+ "bevy_app",
+ "bevy_asset",
+ "bevy_ecs",
+ "bevy_math",
+ "bevy_reflect",
+ "bevy_render",
+ "bevy_sprite",
+ "bevy_transform",
+ "bevy_utils",
+ "bevy_window",
+ "glyph_brush_layout",
+ "serde",
+ "thiserror",
+]
+
+[[package]]
 name = "bevy_time"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -753,6 +778,36 @@ dependencies = [
  "bevy_math",
  "bevy_reflect",
  "serde",
+]
+
+[[package]]
+name = "bevy_ui"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bb85992eb5809936b3326940dc8d6e7b219af3dde1ecbca5948addd6a78694cc"
+dependencies = [
+ "bevy_a11y",
+ "bevy_app",
+ "bevy_asset",
+ "bevy_core_pipeline",
+ "bevy_derive",
+ "bevy_ecs",
+ "bevy_hierarchy",
+ "bevy_input",
+ "bevy_log",
+ "bevy_math",
+ "bevy_reflect",
+ "bevy_render",
+ "bevy_sprite",
+ "bevy_text",
+ "bevy_transform",
+ "bevy_utils",
+ "bevy_window",
+ "bytemuck",
+ "serde",
+ "smallvec",
+ "taffy",
+ "thiserror",
 ]
 
 [[package]]
@@ -1306,6 +1361,17 @@ dependencies = [
 ]
 
 [[package]]
+name = "glyph_brush_layout"
+version = "0.2.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cc32c2334f00ca5ac3695c5009ae35da21da8c62d255b5b96d56e2597a637a38"
+dependencies = [
+ "ab_glyph",
+ "approx",
+ "xi-unicode",
+]
+
+[[package]]
 name = "gpu-alloc"
 version = "0.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1355,6 +1421,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "363e3677e55ad168fef68cf9de3a4a310b53124c5e784c53a1d70e92d23f2126"
 dependencies = [
  "bitflags 1.3.2",
+]
+
+[[package]]
+name = "grid"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0634107a3a005070dd73e27e74ecb691a94e9e5ba7829f434db7fbf73a6b5c47"
+dependencies = [
+ "no-std-compat",
 ]
 
 [[package]]
@@ -1743,6 +1818,12 @@ dependencies = [
  "libc",
  "memoffset",
 ]
+
+[[package]]
+name = "no-std-compat"
+version = "0.4.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b93853da6d84c2e3c7d730d6473e8817692dd89be387eb01b94d7f108ecb5b8c"
 
 [[package]]
 name = "nom"
@@ -2420,6 +2501,18 @@ dependencies = [
  "ntapi",
  "once_cell",
  "winapi",
+]
+
+[[package]]
+name = "taffy"
+version = "0.3.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3540ec65df399929a04a485feb50144475735920cc47eaf8eba09c70b1df4055"
+dependencies = [
+ "arrayvec",
+ "grid",
+ "num-traits",
+ "slotmap",
 ]
 
 [[package]]
@@ -3171,6 +3264,12 @@ checksum = "463705a63313cd4301184381c5e8042f0a7e9b4bb63653f216311d4ae74690b7"
 dependencies = [
  "nom",
 ]
+
+[[package]]
+name = "xi-unicode"
+version = "0.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a67300977d3dc3f8034dae89778f502b6ba20b269527b3223ba59c0cf393bb8a"
 
 [[package]]
 name = "xml-rs"
