@@ -2,10 +2,9 @@ use crate::{
     bump::{handle_bumps, BumpEvent},
     dungeon::TILE_SIZE_F32,
     dungeon_ui::Messages,
+    rand::prelude::*,
 };
 use bevy::prelude::*;
-use rand::{Rng, SeedableRng};
-use rand_xoshiro::Xoshiro512StarStar;
 use std::{cmp::min, f32::consts::TAU};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Event)]
@@ -146,8 +145,9 @@ fn splatter_blood(
     transform_qry: Query<&Transform>,
     mut commands: Commands,
     asset_server: Res<AssetServer>,
+    rand: Res<Random>,
 ) {
-    let mut rng = Xoshiro512StarStar::from_entropy();
+    let mut rng = rand.from_entropy();
     for event in damage_event.iter() {
         if let Ok(transform) = transform_qry.get(event.entity) {
             let scale = rng.gen_range(0.3..1.0);

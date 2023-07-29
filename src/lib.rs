@@ -13,6 +13,7 @@ pub mod fieldofview;
 pub mod input_manager;
 pub mod mobs;
 pub mod movement;
+pub mod rand;
 pub mod setup;
 pub mod utils;
 
@@ -66,6 +67,7 @@ pub fn run() {
         // Begin game configuration
         .add_state::<GameState>()
         .add_state::<TurnState>()
+        .init_resource::<crate::rand::Random>() // TODO: Use seeds
         .add_systems(
             Update,
             (

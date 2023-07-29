@@ -1,18 +1,18 @@
+use crate::{dungeon::TilePos, rand::prelude::*};
+use itertools::Itertools;
 use std::cmp::{max, min};
 
-use itertools::Itertools;
-use rand::{Rng, SeedableRng};
-use rand_xoshiro::Xoshiro512StarStar;
-
-use crate::dungeon::TilePos;
-
-pub fn simple_tunnel(start: TilePos, end: TilePos) -> impl Iterator<Item = TilePos> {
+pub fn simple_tunnel(
+    start: TilePos,
+    end: TilePos,
+    rng: &mut Random,
+) -> impl Iterator<Item = TilePos> {
     let x1 = start.x;
     let x2 = end.x;
     let y1 = start.y;
     let y2 = end.y;
 
-    let (corner_x, corner_y) = if Xoshiro512StarStar::from_entropy().gen_bool(0.5) {
+    let (corner_x, corner_y) = if rng.gen_bool(0.5) {
         (x2, y1)
     } else {
         (x1, y2)

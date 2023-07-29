@@ -1,6 +1,5 @@
+use crate::rand::prelude::*;
 use bevy::prelude::*;
-use rand::{Rng, SeedableRng};
-use rand_xoshiro::Xoshiro512StarStar;
 
 mod map;
 pub use map::{Map, MapSize};
@@ -16,14 +15,13 @@ pub fn generate_dungeon(
     height: u32,
     commands: &mut Commands,
     asset_server: &AssetServer,
+    mut rng: Random,
 ) -> (Map, TilePos) {
     let max_room_size = 10;
     let min_room_size = 6;
     let max_rooms = 30;
 
     let mut room_list: Vec<RectangularRoom> = Vec::new();
-
-    let mut rng = Xoshiro512StarStar::from_entropy();
 
     let mut map = Map::new(width, height, commands, asset_server);
     let mut player_start = map.size.center_tile();
@@ -56,7 +54,7 @@ pub fn generate_dungeon(
 
     for (a, b) in rooms.edges() {
         map.add_tunnel(
-            simple_tunnel(a.center(), b.center()),
+            simple_tunnel(a.center(), b.center(), &mut rng),
             commands,
             asset_server,
         );

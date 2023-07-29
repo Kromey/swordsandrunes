@@ -1,12 +1,11 @@
 use bevy::prelude::*;
-use rand::{seq::IteratorRandom, Rng, SeedableRng};
-use rand_xoshiro::Xoshiro512StarStar;
 
 use crate::{
     camera::PrimaryCamera,
     combat::{Defense, Power, HP},
     dungeon::generate_dungeon,
     mobs::MobList,
+    rand::prelude::*,
     GameState, TurnState,
 };
 
@@ -19,17 +18,24 @@ fn setup_game(
     asset_server: Res<AssetServer>,
     mut camera: Query<&mut Transform, With<PrimaryCamera>>,
     mob_list: Res<MobList>,
+    random: Res<Random>,
 ) {
     let width = 80;
     let height = 45;
 
-    let (map, player_start) = generate_dungeon(width, height, &mut commands, &asset_server);
+    let (map, player_start) = generate_dungeon(
+        width,
+        height,
+        &mut commands,
+        &asset_server,
+        random.from_entropy(),
+    );
 
     if let Ok(mut transform) = camera.get_single_mut() {
         transform.translation = map.size.center().extend(transform.translation.z);
     }
 
-    let mut rng = Xoshiro512StarStar::from_entropy();
+    let mut rng = random.from_entropy();
     for room in map.iter_rooms() {
         let n = rng.gen_range(0..=3);
         for tile in room.iter().choose_multiple(&mut rng, n) {
