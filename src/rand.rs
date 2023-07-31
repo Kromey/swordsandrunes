@@ -18,11 +18,20 @@ impl Random {
     }
 
     pub fn roll_3d6(&mut self) -> i32 {
-        (0..3).map(|_| self.roll_die()).sum()
+        self.roll_dice(3)
     }
 
     pub fn roll_die(&mut self) -> i32 {
-        self.0.gen_range(1..=6)
+        self.roll_poly_die(6)
+    }
+
+    pub fn roll_dice(&mut self, dice: u32) -> i32 {
+        (0..dice).map(|_| self.roll_die()).sum()
+    }
+
+    pub fn roll_poly_die(&mut self, sides: i32) -> i32 {
+        debug_assert!(sides > 0, "Number of die sides must be positive");
+        self.0.gen_range(1..=sides)
     }
 }
 
