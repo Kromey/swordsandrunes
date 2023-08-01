@@ -6,7 +6,7 @@ use crate::{
     dungeon::generate_dungeon,
     mobs::MobList,
     rand::prelude::*,
-    stats::{Skill, SkillSheet},
+    stats::{Attributes, Skill, SkillSheet},
     GameState, TurnState,
 };
 
@@ -61,6 +61,12 @@ fn setup_game(
         HP::new(30),
         skills,
         Name::new("Player"),
+        Attributes {
+            strength: 12,
+            dexterity: 12,
+            intelligence: 12,
+            perception: 12,
+        },
         Player,
     ));
 

@@ -9,3 +9,4 @@ sprite = "ogre.png"
 hp = 16
 defense = 9
 attack = 12
+attributes = { strength = 15 }

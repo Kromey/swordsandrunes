@@ -3,13 +3,10 @@ use crate::{
     dungeon::TILE_SIZE_F32,
     dungeon_ui::Messages,
     rand::prelude::*,
-    stats::SkillSheet,
+    stats::{Attributes, SkillSheet},
 };
 use bevy::prelude::*;
-use std::{
-    cmp::{max, min},
-    f32::consts::TAU,
-};
+use std::{cmp::min, f32::consts::TAU};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Event)]
 pub struct AttackEvent {
@@ -84,7 +81,7 @@ impl HP {
 }
 
 fn attack(
-    attacker_qry: Query<(&SkillSheet, Option<&Name>)>,
+    attacker_qry: Query<(&SkillSheet, &Attributes, Option<&Name>)>,
     mut defender_qry: Query<(&mut HP, &SkillSheet, Option<&Name>)>,
     mut attack_events: EventReader<AttackEvent>,
     mut damage_event: EventWriter<DamageEvent>,
@@ -92,7 +89,9 @@ fn attack(
     rand: Res<Random>,
 ) {
     for event in attack_events.iter() {
-        if let Ok((attacker_skills, attacker)) = attacker_qry.get(event.attacker) {
+        if let Ok((attacker_skills, attacker_attributes, attacker)) =
+            attacker_qry.get(event.attacker)
+        {
             if let Ok((mut hp, defender_skills, defender)) = defender_qry.get_mut(event.target) {
                 let mut rng = rand.from_entropy();
 
@@ -131,7 +130,7 @@ fn attack(
                     continue;
                 }
 
-                let damage = max(1, attack.level() - defense.level()) as u16;
+                let damage = attacker_attributes.roll_damage(&mut rng) as u16;
 
                 if damage > 0 {
                     if let (Some(attacker), Some(defender)) = (attacker, defender) {

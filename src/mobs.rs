@@ -7,7 +7,7 @@ use crate::{
     dungeon::{BlocksMovement, Map, TilePos},
     fieldofview::FieldOfView,
     setup::Player,
-    stats::{Skill, SkillSheet},
+    stats::{Attributes, Skill, SkillSheet},
     utils::get_dat_path,
     TurnState,
 };
@@ -69,6 +69,8 @@ pub struct MobData {
     hp: u16,
     defense: Skill,
     attack: Skill,
+    #[serde(default = "Default::default")]
+    attributes: Attributes,
 }
 
 impl MobData {
@@ -83,6 +85,7 @@ impl MobData {
             },
             HP::new(self.hp),
             skills,
+            self.attributes,
             Mob,
         ));
 
