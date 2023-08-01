@@ -2,10 +2,11 @@ use bevy::prelude::*;
 
 use crate::{
     camera::PrimaryCamera,
-    combat::{Defense, Power, HP},
+    combat::HP,
     dungeon::generate_dungeon,
     mobs::MobList,
     rand::prelude::*,
+    stats::{Skill, SkillSheet},
     GameState, TurnState,
 };
 
@@ -48,6 +49,9 @@ fn setup_game(
         }
     }
 
+    let mut skills = SkillSheet::new();
+    skills.set("Defense", Skill::new(12));
+    skills.set("Attack", Skill::new(15));
     commands.spawn((
         SpriteBundle {
             texture: asset_server.load("sprites/human_adventurer.png"),
@@ -55,8 +59,7 @@ fn setup_game(
             ..Default::default()
         },
         HP::new(30),
-        Defense(2),
-        Power(5),
+        skills,
         Name::new("Player"),
         Player,
     ));

@@ -3,9 +3,13 @@ use crate::{
     dungeon::TILE_SIZE_F32,
     dungeon_ui::Messages,
     rand::prelude::*,
+    stats::SkillSheet,
 };
 use bevy::prelude::*;
-use std::{cmp::min, f32::consts::TAU};
+use std::{
+    cmp::{max, min},
+    f32::consts::TAU,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Event)]
 pub struct AttackEvent {
@@ -79,43 +83,55 @@ impl HP {
     }
 }
 
-#[derive(
-    Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Component, Deref, DerefMut,
-)]
-pub struct Power(pub u16);
-
-#[derive(
-    Debug, Default, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Component, Deref, DerefMut,
-)]
-pub struct Defense(pub u16);
-
-impl std::ops::Sub<Defense> for Power {
-    type Output = u16;
-
-    fn sub(self, rhs: Defense) -> Self::Output {
-        self.0.saturating_sub(rhs.0)
-    }
-}
-
-impl std::ops::Sub<&Defense> for &Power {
-    type Output = u16;
-
-    fn sub(self, rhs: &Defense) -> Self::Output {
-        self.0.saturating_sub(rhs.0)
-    }
-}
-
 fn attack(
-    attacker_qry: Query<(&Power, Option<&Name>)>,
-    mut defender_qry: Query<(&mut HP, &Defense, Option<&Name>)>,
+    attacker_qry: Query<(&SkillSheet, Option<&Name>)>,
+    mut defender_qry: Query<(&mut HP, &SkillSheet, Option<&Name>)>,
     mut attack_events: EventReader<AttackEvent>,
     mut damage_event: EventWriter<DamageEvent>,
     mut messages: ResMut<Messages>,
+    rand: Res<Random>,
 ) {
-    for attack in attack_events.iter() {
-        if let Ok((power, attacker)) = attacker_qry.get(attack.attacker) {
-            if let Ok((mut hp, defense, defender)) = defender_qry.get_mut(attack.target) {
-                let damage = power - defense;
+    for event in attack_events.iter() {
+        if let Ok((attacker_skills, attacker)) = attacker_qry.get(event.attacker) {
+            if let Ok((mut hp, defender_skills, defender)) = defender_qry.get_mut(event.target) {
+                let mut rng = rand.from_entropy();
+
+                let attack = attacker_skills.get("Attack");
+                let defense = defender_skills.get("Defense");
+
+                let (attack_successful, degree_of_success) = attack.check(0, &mut rng);
+                if !attack_successful {
+                    if let (Some(attacker), Some(defender)) = (attacker, defender) {
+                        let message = format!("{attacker} misses {defender}!");
+                        if attacker.as_str() == "Player" {
+                            messages.add_friendly(message);
+                        } else if defender.as_str() == "Player" {
+                            messages.add_hostile(message);
+                        } else {
+                            messages.add_notice(message);
+                        }
+                    }
+
+                    continue;
+                }
+
+                let (defense_successful, _) = defense.check(-degree_of_success, &mut rng);
+                if defense_successful {
+                    if let (Some(attacker), Some(defender)) = (attacker, defender) {
+                        let message = format!("{defender} dodges {attacker}'s swing!");
+                        if attacker.as_str() == "Player" {
+                            messages.add_friendly(message);
+                        } else if defender.as_str() == "Player" {
+                            messages.add_hostile(message);
+                        } else {
+                            messages.add_notice(message);
+                        }
+                    }
+
+                    continue;
+                }
+
+                let damage = max(1, attack.level() - defense.level()) as u16;
 
                 if damage > 0 {
                     if let (Some(attacker), Some(defender)) = (attacker, defender) {
@@ -131,7 +147,7 @@ fn attack(
                     }
                     hp.sub(damage);
                     damage_event.send(DamageEvent {
-                        entity: attack.target,
+                        entity: event.target,
                         damage,
                     });
                 }

@@ -3,10 +3,11 @@ use serde::Deserialize;
 use std::{collections::HashMap, fs::read_to_string, path::PathBuf};
 
 use crate::{
-    combat::{AttackEvent, Defense, Power, HP},
+    combat::{AttackEvent, HP},
     dungeon::{BlocksMovement, Map, TilePos},
     fieldofview::FieldOfView,
     setup::Player,
+    stats::{Skill, SkillSheet},
     utils::get_dat_path,
     TurnState,
 };
@@ -66,20 +67,22 @@ pub struct MobData {
     blocks_movement: bool,
     #[serde(alias = "HP", alias = "hit_points")]
     hp: u16,
-    defense: u16,
-    power: u16,
+    defense: Skill,
+    attack: Skill,
 }
 
 impl MobData {
     pub fn spawn(&self, commands: &mut Commands, asset_server: &AssetServer) -> Entity {
+        let mut skills = SkillSheet::new();
+        skills.set("Defense", self.defense);
+        skills.set("Attack", self.attack);
         let mut ec = commands.spawn((
             SpriteBundle {
                 texture: asset_server.load(self.sprite()),
                 ..Default::default()
             },
             HP::new(self.hp),
-            Defense(self.defense),
-            Power(self.power),
+            skills,
             Mob,
         ));
 

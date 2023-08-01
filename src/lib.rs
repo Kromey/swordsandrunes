@@ -15,6 +15,7 @@ pub mod mobs;
 pub mod movement;
 pub mod rand;
 pub mod setup;
+pub mod stats;
 pub mod utils;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash, States)]
