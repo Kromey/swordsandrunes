@@ -1,0 +1,15 @@
+- name: Orc
+  sprite: orc.png
+  blocks_movement: true
+  hp: 10
+  defense: 8
+  attack: 10
+
+- name: Ogre
+  sprite: ogre.png
+  blocks_movement: true
+  hp: 16
+  defense: 9
+  attack: 12
+  attributes:
+    strength: 15

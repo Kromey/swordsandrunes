@@ -16,10 +16,7 @@ use crate::{
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component)]
 pub struct Mob;
 
-type MobMap = HashMap<String, MobData>;
-
 #[derive(Debug, Deserialize, Resource)]
-#[serde(from = "MobMap")]
 pub struct MobList {
     names: HashMap<String, usize>,
     mobs: Vec<MobData>,
@@ -27,9 +24,16 @@ pub struct MobList {
 
 impl MobList {
     pub fn from_raws() -> Self {
-        let path = get_dat_path("mobs.toml");
+        let path = get_dat_path("mobs.yaml");
         let data = read_to_string(path).unwrap();
-        toml::from_str(&data).unwrap()
+        let mobs: Vec<MobData> = serde_yaml::from_str(&data).unwrap();
+        let names = mobs
+            .iter()
+            .enumerate()
+            .map(|(i, mob)| (mob.name.to_lowercase(), i))
+            .collect();
+
+        Self { mobs, names }
     }
 
     pub fn spawn<S: AsRef<str>>(
@@ -38,7 +42,7 @@ impl MobList {
         commands: &mut Commands,
         asset_server: &AssetServer,
     ) -> Entity {
-        let id = self.names.get(mob_name.as_ref()).unwrap();
+        let id = self.names.get(&mob_name.as_ref().to_lowercase()).unwrap();
         let mob = self.mobs[*id].spawn(commands, asset_server);
         commands
             .entity(mob)
@@ -47,21 +51,9 @@ impl MobList {
     }
 }
 
-impl From<MobMap> for MobList {
-    fn from(value: MobMap) -> Self {
-        let (name_list, mobs) = value.into_iter().unzip::<_, _, Vec<_>, Vec<_>>();
-        let names = name_list
-            .into_iter()
-            .enumerate()
-            .map(|(i, name)| (name, i))
-            .collect();
-
-        Self { names, mobs }
-    }
-}
-
 #[derive(Debug, Deserialize)]
 pub struct MobData {
+    name: String,
     sprite: String,
     #[serde(default = "default_blocks_movement")]
     blocks_movement: bool,

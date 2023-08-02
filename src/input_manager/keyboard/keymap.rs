@@ -8,7 +8,7 @@ use serde::{Deserialize, Serialize};
 use super::Action;
 
 /// The default keymap
-const DEFAULT_KEYMAP: &str = include_str!("default_keymap.toml");
+const DEFAULT_KEYMAP: &str = include_str!("default_keymap.yaml");
 
 /// A representation of bound keycodes
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
@@ -49,16 +49,17 @@ struct ActionBinding {
 }
 
 /// A set of all actions and their keybindings
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq)]
 pub struct KeyMap {
     /// The collection of actions and keybindings
-    #[serde(rename = "bind")]
     boundkeys: Vec<ActionBinding>,
 }
 
 impl Default for KeyMap {
     fn default() -> Self {
-        toml::from_str(DEFAULT_KEYMAP).unwrap()
+        Self {
+            boundkeys: serde_yaml::from_str(DEFAULT_KEYMAP).unwrap(),
+        }
     }
 }
 
