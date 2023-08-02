@@ -1,6 +1,6 @@
 use bevy::{prelude::*, utils::HashSet};
 use serde::Deserialize;
-use std::{collections::HashMap, fs::read_to_string, path::PathBuf};
+use std::{collections::HashMap, fs::File, io::BufReader, path::PathBuf};
 
 use crate::{
     combat::{AttackEvent, HP},
@@ -18,22 +18,22 @@ pub struct Mob;
 
 #[derive(Debug, Deserialize, Resource)]
 pub struct MobList {
-    names: HashMap<String, usize>,
-    mobs: Vec<MobData>,
+    mobs: HashMap<String, MobData>,
 }
 
 impl MobList {
     pub fn from_raws() -> Self {
         let path = get_dat_path("mobs.yaml");
-        let data = read_to_string(path).unwrap();
-        let mobs: Vec<MobData> = serde_yaml::from_str(&data).unwrap();
-        let names = mobs
-            .iter()
-            .enumerate()
-            .map(|(i, mob)| (mob.name.to_lowercase(), i))
-            .collect();
+        let reader = BufReader::new(File::open(path).unwrap());
 
-        Self { mobs, names }
+        Self {
+            mobs: serde_yaml::Deserializer::from_reader(reader)
+                .map(|document| {
+                    let mob = MobData::deserialize(document).unwrap();
+                    (mob.name.to_lowercase(), mob)
+                })
+                .collect(),
+        }
     }
 
     pub fn spawn<S: AsRef<str>>(
@@ -42,12 +42,10 @@ impl MobList {
         commands: &mut Commands,
         asset_server: &AssetServer,
     ) -> Entity {
-        let id = self.names.get(&mob_name.as_ref().to_lowercase()).unwrap();
-        let mob = self.mobs[*id].spawn(commands, asset_server);
-        commands
-            .entity(mob)
-            .insert(Name::new(mob_name.as_ref().to_owned()));
-        mob
+        self.mobs
+            .get(&mob_name.as_ref().to_lowercase())
+            .unwrap()
+            .spawn(commands, asset_server)
     }
 }
 
@@ -71,6 +69,7 @@ impl MobData {
         skills.set("Defense", self.defense);
         skills.set("Attack", self.attack);
         let mut ec = commands.spawn((
+            Name::new(self.name.clone()),
             SpriteBundle {
                 texture: asset_server.load(self.sprite()),
                 ..Default::default()

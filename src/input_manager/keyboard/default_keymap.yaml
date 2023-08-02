@@ -1,44 +1,30 @@
-- action: RevealMap
-  key: R
-- action: ToggleDebug
-  key: F3
+RevealMap: R
+ToggleDebug: F3
 
-- action: WalkNorth
-  keys:
-  - K
-  - Numpad8
-- action: WalkEast
-  keys:
-  - L
-  - Numpad6
-- action: WalkSouth
-  keys:
-  - J
-  - Numpad2
-- action: WalkWest
-  keys:
-  - H
-  - Numpad4
-- action: WalkNortheast
-  keys:
-  - I
-  - Numpad9
-- action: WalkSoutheast
-  keys:
-  - M
-  - Numpad3
-- action: WalkSouthwest
-  keys:
-  - N
-  - Numpad1
-- action: WalkNorthwest
-  keys:
-  - U
-  - Numpad7
+WalkNorth:
+- K
+- Numpad8
+WalkEast:
+- L
+- Numpad6
+WalkSouth:
+- J
+- Numpad2
+WalkWest:
+- H
+- Numpad4
+WalkNortheast:
+- I
+- Numpad9
+WalkSoutheast:
+- M
+- Numpad3
+WalkSouthwest:
+- N
+- Numpad1
+WalkNorthwest:
+- U
+- Numpad7
 
-- action: ZoomOut
-  key:
-  - Minus
-- action: ZoomIn
-  key:
-  - Equals
+ZoomOut: Minus
+ZoomIn: Equals

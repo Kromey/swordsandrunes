@@ -38,21 +38,11 @@ impl From<BoundKey> for Vec<KeyCode> {
     }
 }
 
-/// Bind keys to a particular [`Action`]
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]
-struct ActionBinding {
-    /// The action for this binding
-    action: Action,
-    /// The key for this binding
-    #[serde(alias = "keys")]
-    key: BoundKey,
-}
-
 /// A set of all actions and their keybindings
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct KeyMap {
     /// The collection of actions and keybindings
-    boundkeys: Vec<ActionBinding>,
+    boundkeys: HashMap<Action, BoundKey>,
 }
 
 impl Default for KeyMap {
@@ -68,8 +58,7 @@ impl KeyMap {
     pub fn action_keys(&self) -> HashMap<Action, Vec<KeyCode>> {
         self.boundkeys
             .iter()
-            .cloned()
-            .map(|k| (k.action, k.key.into()))
+            .map(|(action, keys)| (*action, keys.into()))
             .collect()
     }
 }
