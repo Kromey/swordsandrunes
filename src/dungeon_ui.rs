@@ -13,16 +13,16 @@ pub mod messages;
 pub use messages::Messages;
 
 #[derive(Debug, Default, Component)]
-pub struct DungeonUI;
+struct DungeonUI;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component)]
-pub struct HPBar;
+struct HPBar;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component)]
-pub struct MessageLog;
+struct MessageLog;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component)]
-pub struct LookingAt;
+struct LookingAt;
 
 fn spawn_dungeon_ui(
     mut commands: Commands,
