@@ -11,6 +11,8 @@ use keymap::KeyMap;
 
 use crate::TurnState;
 
+use self::keymap::BoundKey;
+
 /// A game action that can be bound to a key
 #[non_exhaustive]
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize)]
@@ -72,7 +74,7 @@ impl Action {
 /// A modifier key
 #[non_exhaustive]
 #[repr(usize)]
-#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize)]
 pub enum ActionModifier {
     /// Shift
     Shift = 0,
@@ -80,6 +82,16 @@ pub enum ActionModifier {
     Ctrl = 1,
     /// Alt
     Alt = 2,
+}
+
+impl ActionModifier {
+    fn key_codes(&self) -> [KeyCode; 2] {
+        match *self {
+            Self::Shift => [KeyCode::ShiftLeft, KeyCode::ShiftRight],
+            Self::Ctrl => [KeyCode::ControlLeft, KeyCode::ControlRight],
+            Self::Alt => [KeyCode::AltLeft, KeyCode::AltRight],
+        }
+    }
 }
 
 /// Game actions that can be performed
@@ -92,7 +104,7 @@ pub struct Actions {
     /// Note that no distinction is made between left and right keys.
     modifiers: [bool; 3],
     /// Current keybindings
-    bindings: HashMap<Action, Vec<KeyCode>>,
+    bindings: HashMap<Action, Vec<keymap::BoundKey>>,
 }
 
 impl Actions {
@@ -110,23 +122,34 @@ impl Actions {
     fn update(&mut self, keys: &Input<KeyCode>) -> bool {
         let mut received_player_input = false;
 
+        // The "Big Three" modifier keys
+        self.modifiers = [
+            keys.any_pressed(ActionModifier::Shift.key_codes()),
+            keys.any_pressed(ActionModifier::Ctrl.key_codes()),
+            keys.any_pressed(ActionModifier::Alt.key_codes()),
+        ];
+        let any_modifier = self.modifiers.iter().any(|&pressed| pressed);
+
         for (&action, boundkeys) in self.bindings.iter() {
             let state = if boundkeys.is_empty() {
                 false
             } else if action.is_toggle() {
-                keys.any_just_pressed(boundkeys.iter().copied())
+                boundkeys.iter().any(|&boundkey| match boundkey {
+                    BoundKey::Key(keycode) => !any_modifier && keys.just_pressed(keycode),
+                    BoundKey::ModifiedKey { key, with } => {
+                        self.modifier(with) && keys.just_pressed(key)
+                    }
+                })
             } else {
-                keys.any_pressed(boundkeys.iter().copied())
+                boundkeys.iter().any(|&boundkey| match boundkey {
+                    BoundKey::Key(key) => !any_modifier && keys.pressed(key),
+                    BoundKey::ModifiedKey { key, with } => self.modifier(with) && keys.pressed(key),
+                })
             };
 
             self.state.insert(action, state);
             received_player_input |= state && action.ends_turn();
         }
-
-        // The "Big Three" modifier keys
-        self.modifiers[0] = keys.any_pressed([KeyCode::ShiftLeft, KeyCode::ShiftRight]);
-        self.modifiers[1] = keys.any_pressed([KeyCode::ControlLeft, KeyCode::ControlRight]);
-        self.modifiers[2] = keys.any_pressed([KeyCode::AltLeft, KeyCode::AltRight]);
 
         received_player_input
     }

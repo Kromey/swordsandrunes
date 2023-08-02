@@ -1,4 +1,6 @@
-RevealMap: R
+RevealMap:
+  key: R
+  with: Alt
 ToggleDebug: F3
 
 WalkNorth:

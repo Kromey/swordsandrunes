@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use crate::{
     dungeon::{BlocksMovement, BlocksSight, RectangularRoom, RoomGraph, Tile, TileBundle, TilePos},
     fieldofview::FieldOfView,
-    input_manager::{Action, ActionModifier, Actions},
+    input_manager::{Action, Actions},
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -184,7 +184,7 @@ impl Map {
 }
 
 pub fn reveal_map(actions: Res<Actions>, mut tiles: Query<&mut FieldOfView, With<Tile>>) {
-    if actions.perform(Action::RevealMap) && actions.modifier(ActionModifier::Alt) {
+    if actions.perform(Action::RevealMap) {
         for mut fov in tiles.iter_mut() {
             if *fov == FieldOfView::Unexplored {
                 *fov = FieldOfView::NotVisible;
