@@ -3,6 +3,9 @@ RevealMap:
   with: Alt
 ToggleDebug: F3
 
+Wait:
+- Space
+- Numpad5
 WalkNorth:
 - K
 - Numpad8

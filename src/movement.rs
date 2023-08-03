@@ -16,6 +16,12 @@ pub fn movement(
     mut next_state: ResMut<NextState<TurnState>>,
     mut bump_events: EventWriter<BumpEvent>,
 ) {
+    if actions.perform(Action::Wait) {
+        // Nothing to do but wait
+        next_state.set(TurnState::MonsterTurn);
+        return;
+    }
+
     let mut delta = Vec2::ZERO;
 
     if actions.perform(Action::WalkNorth)

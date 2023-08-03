@@ -21,6 +21,8 @@ pub enum Action {
     RevealMap,
     /// Toggle showing the debug menu
     ToggleDebug,
+    /// Spend a turn doing nothing at all
+    Wait,
     /// Walk north
     WalkNorth,
     /// Walk east
@@ -59,7 +61,7 @@ impl Action {
 
         matches!(
             *self,
-            WalkNorth
+            Wait | WalkNorth
                 | WalkEast
                 | WalkWest
                 | WalkSouth
