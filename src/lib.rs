@@ -11,6 +11,7 @@ pub mod dungeon;
 pub mod dungeon_ui;
 pub mod fieldofview;
 pub mod input_manager;
+pub mod items;
 pub mod mobs;
 pub mod movement;
 pub mod rand;

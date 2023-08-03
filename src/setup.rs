@@ -4,6 +4,7 @@ use crate::{
     camera::PrimaryCamera,
     combat::HP,
     dungeon::generate_dungeon,
+    items::ItemList,
     mobs::MobList,
     rand::prelude::*,
     stats::{Attributes, Skill, SkillSheet},
@@ -75,8 +76,8 @@ fn setup_game(
 }
 
 fn load_raws(mut commands: Commands) {
-    let mobs = MobList::from_raws();
-    commands.insert_resource(mobs);
+    commands.insert_resource(MobList::from_raws());
+    commands.insert_resource(ItemList::from_raws());
 }
 
 /// Ensure the game starts ready for the player to choose their first action
