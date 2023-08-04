@@ -11,6 +11,7 @@ pub mod dungeon;
 pub mod dungeon_ui;
 pub mod fieldofview;
 pub mod input_manager;
+pub mod inventory;
 pub mod items;
 pub mod mobs;
 pub mod movement;
@@ -84,6 +85,7 @@ pub fn run() {
             dungeon::DungeonPlugin,
             dungeon_ui::DungeonUIPlugin,
             input_manager::InputManagerPlugin,
+            inventory::InventoryPlugin,
             mobs::MobsPlugin,
             movement::MovementPlugin,
             setup::SetupPlugin,

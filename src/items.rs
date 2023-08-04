@@ -5,9 +5,6 @@ use serde::Deserialize;
 
 use crate::utils::get_dat_path;
 
-pub mod inventory;
-pub use inventory::Inventory;
-
 #[derive(Debug, Clone, Resource)]
 pub struct ItemList {
     items: HashMap<String, ItemData>,
