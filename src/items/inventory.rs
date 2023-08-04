@@ -22,4 +22,15 @@ impl Inventory {
     pub fn items(&self) -> &[Item] {
         self.items.as_ref()
     }
+
+    pub fn insert(&mut self, item: Item) -> bool {
+        if self.items.len() >= self.capacity {
+            false
+        } else {
+            self.items.push(item);
+            self.items.sort_unstable();
+
+            true
+        }
+    }
 }

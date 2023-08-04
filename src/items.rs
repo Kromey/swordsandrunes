@@ -6,6 +6,7 @@ use serde::Deserialize;
 use crate::utils::get_dat_path;
 
 pub mod inventory;
+pub use inventory::Inventory;
 
 #[derive(Debug, Clone, Resource)]
 pub struct ItemList {
@@ -34,9 +35,21 @@ impl ItemList {
 
 #[derive(Debug, Clone, PartialEq, Eq, Component, Deserialize)]
 pub struct Item {
-    name: String,
+    pub name: String,
     #[serde(flatten)]
-    data: ItemData,
+    pub data: ItemData,
+}
+
+impl PartialOrd for Item {
+    fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Item {
+    fn cmp(&self, other: &Self) -> std::cmp::Ordering {
+        self.name.cmp(&other.name)
+    }
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Component, Deserialize)]

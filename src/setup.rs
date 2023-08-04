@@ -4,7 +4,7 @@ use crate::{
     camera::PrimaryCamera,
     combat::HP,
     dungeon::generate_dungeon,
-    items::ItemList,
+    items::{Inventory, ItemList},
     mobs::MobList,
     rand::prelude::*,
     stats::{Attributes, Skill, SkillSheet},
@@ -21,11 +21,13 @@ fn setup_game(
     asset_server: Res<AssetServer>,
     mut camera: Query<&mut Transform, With<PrimaryCamera>>,
     mob_list: Res<MobList>,
+    item_list: Res<ItemList>,
     random: Res<Random>,
 ) {
     let width = 80;
     let height = 45;
 
+    // === Generate Dungeon ===
     let (map, player_start) = generate_dungeon(
         width,
         height,
@@ -34,10 +36,12 @@ fn setup_game(
         random.from_entropy(),
     );
 
+    // === Center Camera ===
     if let Ok(mut transform) = camera.get_single_mut() {
         transform.translation = map.size.center().extend(transform.translation.z);
     }
 
+    // === Spawn Monsters ===
     let mut rng = random.from_entropy();
     for room in map.iter_rooms() {
         let n = rng.gen_range(0..=3);
@@ -47,10 +51,30 @@ fn setup_game(
             } else {
                 mob_list.spawn("Orc", &mut commands, &asset_server)
             };
-            commands.entity(entity).insert(tile.as_transform(1.0));
+            commands
+                .entity(entity)
+                .insert(tile.as_transform(SpriteLayer::Actor));
         }
     }
 
+    // === Spawn Potions ===
+    let potion = item_list.get("Potion of Healing");
+    for room in map.iter_rooms() {
+        let n = rng.gen_range(0..=5).clamp(3, 5) - 3; // 0-3 = 0; 4-5 = 1-2
+        for tile in room.iter().choose_multiple(&mut rng, n) {
+            commands.spawn((
+                SpriteBundle {
+                    texture: asset_server.load("sprites/items/potions/brilliant_blue.png"),
+                    transform: tile.as_transform(SpriteLayer::Item),
+                    ..Default::default()
+                },
+                Name::new(potion.name.clone()),
+                potion.data,
+            ));
+        }
+    }
+
+    // === Spawn Player ===
     let mut skills = SkillSheet::new();
     skills.set("Defense", Skill::new(12));
     skills.set("Attack", Skill::new(15));
@@ -69,9 +93,11 @@ fn setup_game(
             intelligence: 12,
             perception: 12,
         },
+        Inventory::new(26),
         Player,
     ));
 
+    // === Update Game State ===
     commands.insert_resource(map);
     next_state.set(GameState::Running);
 }
