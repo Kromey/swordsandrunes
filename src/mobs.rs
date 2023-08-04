@@ -101,19 +101,26 @@ fn default_blocks_movement() -> bool {
 fn monster_ai(
     map: Res<Map>,
     fov_qry: Query<&FieldOfView>,
-    mut monster_qry: Query<(Entity, &mut Transform), With<Mob>>,
-    player_qry: Query<(Entity, &Transform), (With<Player>, Without<Mob>)>,
     mut attack: EventWriter<AttackEvent>,
-    walkable_qry: Query<&Transform, (Without<BlocksMovement>, Without<Mob>)>,
+    mut transform_qry_set: ParamSet<(
+        Query<(Entity, &mut Transform), With<Mob>>,
+        Query<(Entity, &Transform), With<Player>>,
+        Query<&Transform, With<BlocksMovement>>,
+    )>,
     mut next_state: ResMut<NextState<TurnState>>,
 ) {
     // Get the player's position first to avoid looking this up repeatedly
-    if let Ok((player, player_pos)) = player_qry.get_single() {
+    if let Ok((player, player_pos)) = transform_qry_set.p1().get_single() {
         let player_tile = TilePos::from(player_pos);
 
-        let walkable: HashSet<_> = walkable_qry.iter().map(TilePos::from).collect();
+        // NOTE: We assume below that any mob we end up moving is the only thing blocking a given tile
+        // If this assumption changes, we'll need to change this to e.g. a HashMap tracking tile positions
+        // and a count of how many entities are blocking it, and then we can decrement that count when
+        // moving a monster; likewise when checking if a tile is blocked, we would instead check that
+        // the blocking count is >0
+        let mut unwalkable: HashSet<_> = transform_qry_set.p2().iter().map(TilePos::from).collect();
 
-        for (monster, mut monster_pos) in monster_qry.iter_mut() {
+        for (monster, mut monster_pos) in transform_qry_set.p0().iter_mut() {
             let monster_tile = TilePos::from(*monster_pos);
 
             if let Some(tile_entity) = map.get(monster_tile) {
@@ -124,7 +131,7 @@ fn monster_ai(
                         &monster_tile,
                         |tile| {
                             map.neighbors_of(*tile).into_iter().filter_map(|tile| {
-                                if walkable.contains(&tile) {
+                                if !unwalkable.contains(&tile) {
                                     Some((tile, 1))
                                 } else {
                                     None
@@ -134,6 +141,8 @@ fn monster_ai(
                         |tile| tile.distance(player_tile),
                         |tile| *tile == player_tile,
                     ) {
+                        unwalkable.remove(&monster_tile); // We're no longer blocking this tile, assume no one else is
+                        unwalkable.insert(path[1]); // We are however blocking this next tile
                         *monster_pos = path[1].as_transform(SpriteLayer::Actor);
                     }
                 }
