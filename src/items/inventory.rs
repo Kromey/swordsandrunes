@@ -1,10 +1,10 @@
-use super::Item;
+use super::ItemData;
 use bevy::prelude::*;
 
 #[derive(Debug, Default, Clone, Component)]
 pub struct Inventory {
     capacity: usize,
-    items: Vec<Item>,
+    items: Vec<ItemData>,
 }
 
 impl Inventory {
@@ -19,11 +19,11 @@ impl Inventory {
         self.capacity
     }
 
-    pub fn items(&self) -> &[Item] {
+    pub fn items(&self) -> &[ItemData] {
         self.items.as_ref()
     }
 
-    pub fn insert(&mut self, item: Item) -> bool {
+    pub fn insert(&mut self, item: ItemData) -> bool {
         if self.items.len() >= self.capacity {
             false
         } else {

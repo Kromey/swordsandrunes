@@ -10,7 +10,7 @@ pub use inventory::Inventory;
 
 #[derive(Debug, Clone, Resource)]
 pub struct ItemList {
-    items: HashMap<String, Item>,
+    items: HashMap<String, ItemData>,
 }
 
 impl ItemList {
@@ -21,32 +21,32 @@ impl ItemList {
         Self {
             items: serde_yaml::Deserializer::from_reader(reader)
                 .map(|document| {
-                    let item = Item::deserialize(document).unwrap();
+                    let item = ItemData::deserialize(document).unwrap();
                     (item.name.to_lowercase(), item)
                 })
                 .collect(),
         }
     }
 
-    pub fn get<S: AsRef<str>>(&self, item_name: S) -> &Item {
+    pub fn get<S: AsRef<str>>(&self, item_name: S) -> &ItemData {
         self.items.get(&item_name.as_ref().to_lowercase()).unwrap()
     }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Component, Deserialize)]
-pub struct Item {
+pub struct ItemData {
     pub name: String,
     #[serde(flatten)]
-    pub data: ItemData,
+    pub data: Item,
 }
 
-impl PartialOrd for Item {
+impl PartialOrd for ItemData {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.cmp(other))
     }
 }
 
-impl Ord for Item {
+impl Ord for ItemData {
     fn cmp(&self, other: &Self) -> std::cmp::Ordering {
         self.name.cmp(&other.name)
     }
@@ -54,7 +54,7 @@ impl Ord for Item {
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Component, Deserialize)]
 #[serde(tag = "type", rename_all = "lowercase")]
-pub enum ItemData {
+pub enum Item {
     Potion { effect: Effect },
     Scroll { effect: Effect },
     Weapon,
