@@ -3,7 +3,7 @@ use bevy::prelude::*;
 mod pos;
 pub use pos::TilePos;
 
-use crate::fieldofview::FieldOfView;
+use crate::{fieldofview::FieldOfView, utils::SpriteLayer};
 
 /// Dimensions of a tile edge; tiles are assumed to be square
 pub const TILE_SIZE: u32 = 32;
@@ -18,7 +18,7 @@ impl Tile {
     pub fn sprite_bundle(pos: TilePos, texture: Handle<Image>) -> SpriteBundle {
         SpriteBundle {
             texture,
-            transform: pos.as_transform(0.0),
+            transform: pos.as_transform(SpriteLayer::Tile),
 
             ..Default::default()
         }

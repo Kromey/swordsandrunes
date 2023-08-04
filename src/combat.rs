@@ -4,6 +4,7 @@ use crate::{
     dungeon_ui::Messages,
     rand::prelude::*,
     stats::{Attributes, SkillSheet},
+    utils::SpriteLayer,
 };
 use bevy::prelude::*;
 use std::{cmp::min, f32::consts::TAU};
@@ -173,7 +174,7 @@ fn splatter_blood(
 
             let mut transform = *transform;
             transform.translation += Vec2::from_angle(displace_rot).extend(0.0) * displace;
-            transform.translation.z = 0.5; // Above tiles, below mobs
+            transform.translation.z = SpriteLayer::Decoration.as_f32();
             transform.rotate_z(rot);
             transform.scale = Vec3::splat(scale);
 

@@ -8,7 +8,7 @@ use crate::{
     fieldofview::FieldOfView,
     setup::Player,
     stats::{Attributes, Skill, SkillSheet},
-    utils::get_dat_path,
+    utils::{get_dat_path, SpriteLayer},
     TurnState,
 };
 
@@ -133,7 +133,7 @@ fn monster_ai(
                         |tile| tile.distance(player_tile),
                         |tile| *tile == player_tile,
                     ) {
-                        *monster_pos = path[1].as_transform(monster_pos.translation.z);
+                        *monster_pos = path[1].as_transform(SpriteLayer::Actor);
                     }
                 }
             }

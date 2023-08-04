@@ -1,5 +1,5 @@
 use super::TILE_SIZE;
-use crate::dungeon::MapSize;
+use crate::{dungeon::MapSize, utils::SpriteLayer};
 use bevy::prelude::*;
 use std::cmp::max;
 
@@ -38,8 +38,8 @@ impl TilePos {
         }
     }
 
-    pub fn as_transform(&self, z: f32) -> Transform {
-        Transform::from_translation(self.as_vec().extend(z))
+    pub fn as_transform(&self, layer: SpriteLayer) -> Transform {
+        Transform::from_translation(self.as_vec().extend(layer.as_f32()))
     }
 }
 

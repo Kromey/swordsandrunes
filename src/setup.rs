@@ -8,6 +8,7 @@ use crate::{
     mobs::MobList,
     rand::prelude::*,
     stats::{Attributes, Skill, SkillSheet},
+    utils::SpriteLayer,
     GameState, TurnState,
 };
 
@@ -56,7 +57,7 @@ fn setup_game(
     commands.spawn((
         SpriteBundle {
             texture: asset_server.load("sprites/human_adventurer.png"),
-            transform: player_start.as_transform(1.0),
+            transform: player_start.as_transform(SpriteLayer::Actor),
             ..Default::default()
         },
         HP::new(30),
