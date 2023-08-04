@@ -3,7 +3,6 @@
 
 use crate::{
     dungeon::{BlocksSight, Tile, TilePos},
-    mobs::Mob,
     setup::Player,
 };
 use bevy::prelude::*;
@@ -17,11 +16,21 @@ pub enum FieldOfView {
     Visible,
 }
 
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component)]
+pub enum HideOutOfSight {
+    #[default]
+    Hide,
+    Darken,
+}
+
+#[allow(clippy::type_complexity)]
 pub fn update_fov(
     player_qry: Query<&Transform, (With<Player>, Changed<Transform>)>,
     blocks_sight_qry: Query<&Transform, With<BlocksSight>>,
-    mut fov_tiles_qry: Query<(&mut FieldOfView, &Transform), With<Tile>>,
-    mut mob_qry: Query<(&mut Visibility, &Transform), With<Mob>>,
+    mut fov_set: ParamSet<(
+        Query<(&mut FieldOfView, &mut Sprite, &mut Visibility, &Transform), With<Tile>>,
+        Query<(&mut Visibility, &mut Sprite, &Transform, &HideOutOfSight)>,
+    )>,
 ) {
     if let Ok(player_transform) = player_qry.get_single() {
         let player_pos = TilePos::from(*player_transform);
@@ -33,20 +42,27 @@ pub fn update_fov(
 
         let fov = compute_fov(player_pos, |tile| blockers.contains(&tile));
 
-        for (mut tile_fov, transform) in fov_tiles_qry.iter_mut() {
+        for (mut tile_fov, mut sprite, mut visibility, transform) in fov_set.p0().iter_mut() {
             let pos = TilePos::from(transform);
             if fov.contains(&pos) {
                 *tile_fov = FieldOfView::Visible;
+                *visibility = Visibility::Visible;
+                sprite.color = Color::default();
             } else if *tile_fov == FieldOfView::Visible {
                 *tile_fov = FieldOfView::NotVisible;
+                sprite.color = Color::GRAY;
             }
         }
 
-        for (mut mob_visible, transform) in mob_qry.iter_mut() {
+        for (mut visibility, mut sprite, transform, &hide) in fov_set.p1().iter_mut() {
             if fov.contains(&TilePos::from(transform)) {
-                *mob_visible = Visibility::Visible;
+                *visibility = Visibility::Visible;
+                sprite.color = Color::default();
             } else {
-                *mob_visible = Visibility::Hidden;
+                match hide {
+                    HideOutOfSight::Darken => sprite.color = Color::GRAY,
+                    HideOutOfSight::Hide => *visibility = Visibility::Hidden,
+                }
             }
         }
     }

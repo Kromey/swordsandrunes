@@ -4,6 +4,7 @@ use crate::{
     camera::PrimaryCamera,
     combat::HP,
     dungeon::generate_dungeon,
+    fieldofview::HideOutOfSight,
     items::{Inventory, ItemList},
     mobs::MobList,
     rand::prelude::*,
@@ -69,6 +70,7 @@ fn setup_game(
                     ..Default::default()
                 },
                 Name::new(potion.name.clone()),
+                HideOutOfSight::Hide,
                 potion.data,
             ));
         }

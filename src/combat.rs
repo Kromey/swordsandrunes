@@ -2,6 +2,7 @@ use crate::{
     bump::{handle_bumps, BumpEvent},
     dungeon::TILE_SIZE_F32,
     dungeon_ui::Messages,
+    fieldofview::HideOutOfSight,
     rand::prelude::*,
     stats::{Attributes, SkillSheet},
     utils::SpriteLayer,
@@ -178,11 +179,14 @@ fn splatter_blood(
             transform.rotate_z(rot);
             transform.scale = Vec3::splat(scale);
 
-            commands.spawn((SpriteBundle {
-                texture: asset_server.load(blood),
-                transform,
-                ..Default::default()
-            },));
+            commands.spawn((
+                SpriteBundle {
+                    texture: asset_server.load(blood),
+                    transform,
+                    ..Default::default()
+                },
+                HideOutOfSight::Darken,
+            ));
         }
     }
 }

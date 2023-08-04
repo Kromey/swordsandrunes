@@ -70,6 +70,6 @@ pub struct DungeonPlugin;
 
 impl Plugin for DungeonPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, (map::reveal_map, tiles::tile_fov));
+        app.add_systems(Update, map::reveal_map);
     }
 }

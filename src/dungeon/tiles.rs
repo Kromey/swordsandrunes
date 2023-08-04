@@ -19,6 +19,7 @@ impl Tile {
         SpriteBundle {
             texture,
             transform: pos.as_transform(SpriteLayer::Tile),
+            visibility: Visibility::Hidden,
 
             ..Default::default()
         }
@@ -62,23 +63,5 @@ impl TileBundle {
             BlocksMovement,
             BlocksSight,
         )
-    }
-}
-
-pub fn tile_fov(
-    mut tile_qry: Query<(&FieldOfView, &mut Visibility, &mut Sprite), Changed<FieldOfView>>,
-) {
-    for (fov, mut visibility, mut sprite) in tile_qry.iter_mut() {
-        match *fov {
-            FieldOfView::Unexplored => *visibility = Visibility::Hidden,
-            FieldOfView::NotVisible => {
-                *visibility = Visibility::Visible;
-                sprite.color = Color::GRAY;
-            }
-            FieldOfView::Visible => {
-                *visibility = Visibility::Visible;
-                sprite.color = Default::default();
-            }
-        }
     }
 }

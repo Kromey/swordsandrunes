@@ -5,7 +5,7 @@ use std::{collections::HashMap, fs::File, io::BufReader, path::PathBuf};
 use crate::{
     combat::{AttackEvent, HP},
     dungeon::{BlocksMovement, Map, TilePos},
-    fieldofview::FieldOfView,
+    fieldofview::{FieldOfView, HideOutOfSight},
     setup::Player,
     stats::{Attributes, Skill, SkillSheet},
     utils::{get_dat_path, SpriteLayer},
@@ -77,6 +77,7 @@ impl MobData {
             HP::new(self.hp),
             skills,
             self.attributes,
+            HideOutOfSight::Hide,
             Mob,
         ));
 
