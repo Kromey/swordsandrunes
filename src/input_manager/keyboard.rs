@@ -2,7 +2,7 @@
 //! and turning them into [`Actions`]
 
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
+use std::{collections::HashMap, ops::Index};
 
 use bevy::prelude::*;
 
@@ -17,6 +17,8 @@ use self::keymap::BoundKey;
 #[non_exhaustive]
 #[derive(Debug, PartialEq, Eq, Hash, Clone, Copy, Serialize, Deserialize)]
 pub enum Action {
+    /// Open the inventory screen
+    OpenInventory,
     /// Reveal the entire map
     RevealMap,
     /// Toggle showing the debug menu
@@ -96,17 +98,19 @@ impl ActionModifier {
     }
 }
 
+impl Index<ActionModifier> for [bool; 3] {
+    type Output = bool;
+
+    fn index(&self, index: ActionModifier) -> &Self::Output {
+        &self[index as usize]
+    }
+}
+
 /// Game actions that can be performed
-#[derive(Debug, Resource)]
+#[derive(Debug, Default, Resource)]
 pub struct Actions {
     /// Current state of each action
     state: HashMap<Action, bool>,
-    /// Active modifier keys: Shift, Ctrl, Alt
-    ///
-    /// Note that no distinction is made between left and right keys.
-    modifiers: [bool; 3],
-    /// Current keybindings
-    bindings: HashMap<Action, Vec<keymap::BoundKey>>,
 }
 
 impl Actions {
@@ -115,37 +119,33 @@ impl Actions {
         self.state.get(&action).copied().unwrap_or(false)
     }
 
-    /// The status of a modifier key
-    pub const fn modifier(&self, modifier: ActionModifier) -> bool {
-        self.modifiers[modifier as usize]
-    }
-
     /// Update actions state from current keyboard input
     fn update(&mut self, keys: &Input<KeyCode>) -> bool {
         let mut received_player_input = false;
+        let bindings = KeyMap::default().action_keys();
 
         // The "Big Three" modifier keys
-        self.modifiers = [
+        let modifiers = [
             keys.any_pressed(ActionModifier::Shift.key_codes()),
             keys.any_pressed(ActionModifier::Ctrl.key_codes()),
             keys.any_pressed(ActionModifier::Alt.key_codes()),
         ];
-        let any_modifier = self.modifiers.iter().any(|&pressed| pressed);
+        let any_modifier = modifiers.iter().any(|&pressed| pressed);
 
-        for (&action, boundkeys) in self.bindings.iter() {
+        for (&action, boundkeys) in bindings.iter() {
             let state = if boundkeys.is_empty() {
                 false
             } else if action.is_toggle() {
                 boundkeys.iter().any(|&boundkey| match boundkey {
                     BoundKey::Key(keycode) => !any_modifier && keys.just_pressed(keycode),
                     BoundKey::ModifiedKey { key, with } => {
-                        self.modifier(with) && keys.just_pressed(key)
+                        modifiers[with] && keys.just_pressed(key)
                     }
                 })
             } else {
                 boundkeys.iter().any(|&boundkey| match boundkey {
                     BoundKey::Key(key) => !any_modifier && keys.pressed(key),
-                    BoundKey::ModifiedKey { key, with } => self.modifier(with) && keys.pressed(key),
+                    BoundKey::ModifiedKey { key, with } => modifiers[with] && keys.pressed(key),
                 })
             };
 
@@ -154,16 +154,6 @@ impl Actions {
         }
 
         received_player_input
-    }
-}
-
-impl Default for Actions {
-    fn default() -> Self {
-        Self {
-            state: HashMap::new(),
-            modifiers: [false; 3],
-            bindings: KeyMap::default().action_keys(),
-        }
     }
 }
 
