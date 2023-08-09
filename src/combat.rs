@@ -1,10 +1,10 @@
 use crate::{
     bump::{handle_bumps, BumpEvent},
     dungeon::TILE_SIZE_F32,
-    dungeon_ui::Messages,
     fieldofview::HideOutOfSight,
     rand::prelude::*,
     stats::{Attributes, SkillSheet},
+    ui::Messages,
     utils::SpriteLayer,
 };
 use bevy::prelude::*;

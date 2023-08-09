@@ -1,8 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{
-    combat::AttackEvent, dungeon::Tile, dungeon_ui::Messages, movement::movement, TurnState,
-};
+use crate::{combat::AttackEvent, dungeon::Tile, movement::movement, ui::Messages, TurnState};
 
 #[derive(Debug, Clone, Copy, Event)]
 pub struct BumpEvent {

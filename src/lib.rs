@@ -8,7 +8,6 @@ pub mod bump;
 pub mod camera;
 pub mod combat;
 pub mod dungeon;
-pub mod dungeon_ui;
 pub mod fieldofview;
 pub mod input_manager;
 pub mod inventory;
@@ -18,6 +17,7 @@ pub mod movement;
 pub mod rand;
 pub mod setup;
 pub mod stats;
+pub mod ui;
 pub mod utils;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash, States)]
@@ -83,7 +83,7 @@ pub fn run() {
             camera::CameraPlugin,
             combat::CombatPlugin,
             dungeon::DungeonPlugin,
-            dungeon_ui::DungeonUIPlugin,
+            ui::UIPlugin,
             input_manager::InputManagerPlugin,
             inventory::InventoryPlugin,
             mobs::MobsPlugin,

@@ -6,25 +6,23 @@ use crate::{
     dungeon::{Map, Tile, TilePos},
     fieldofview::FieldOfView,
     setup::Player,
-    GameState,
 };
 
-pub mod messages;
-pub use messages::Messages;
+pub use super::Messages;
 
 #[derive(Debug, Default, Component)]
-struct DungeonUI;
+pub(super) struct DungeonUI;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component)]
-struct HPBar;
+pub(super) struct HPBar;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component)]
-struct MessageLog;
+pub(super) struct MessageLog;
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component)]
-struct LookingAt;
+pub(super) struct LookingAt;
 
-fn spawn_dungeon_ui(
+pub(super) fn spawn_dungeon_ui(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     messages: Res<Messages>,
@@ -153,7 +151,7 @@ fn spawn_dungeon_ui(
         });
 }
 
-fn update_hp(
+pub(super) fn update_hp(
     player_hp_qry: Query<&HP, (Changed<HP>, With<Player>)>,
     mut hp_bar_qry: Query<(Option<&mut Style>, Option<&mut Text>), With<HPBar>>,
 ) {
@@ -177,7 +175,7 @@ fn update_hp(
     }
 }
 
-fn update_message_log(
+pub(super) fn update_message_log(
     messages: Res<Messages>,
     mut message_log_qry: Query<&mut Text, With<MessageLog>>,
     asset_server: Res<AssetServer>,
@@ -192,7 +190,7 @@ fn update_message_log(
     }
 }
 
-fn update_looking_at(
+pub(super) fn update_looking_at(
     mut cursor_evt: EventReader<CursorMoved>,
     mut ui_text_qry: Query<&mut Text, With<LookingAt>>,
     camera_qry: Query<(&Camera, &GlobalTransform), With<PrimaryCamera>>,
@@ -249,24 +247,11 @@ fn update_looking_at(
     }
 }
 
-fn despawn_dungeon_ui(mut commands: Commands, dungeon_ui_qry: Query<Entity, With<DungeonUI>>) {
+pub(super) fn despawn_dungeon_ui(
+    mut commands: Commands,
+    dungeon_ui_qry: Query<Entity, With<DungeonUI>>,
+) {
     if let Ok(dungeon_ui) = dungeon_ui_qry.get_single() {
         commands.entity(dungeon_ui).despawn_recursive();
-    }
-}
-
-#[derive(Debug)]
-pub struct DungeonUIPlugin;
-
-impl Plugin for DungeonUIPlugin {
-    fn build(&self, app: &mut App) {
-        app.init_resource::<Messages>()
-            .add_systems(OnEnter(GameState::Running), spawn_dungeon_ui)
-            .add_systems(OnExit(GameState::Running), despawn_dungeon_ui)
-            .add_systems(
-                Update,
-                (update_hp, update_message_log, update_looking_at)
-                    .run_if(in_state(GameState::Running)),
-            );
     }
 }

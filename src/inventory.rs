@@ -2,9 +2,9 @@ use std::collections::HashSet;
 
 use crate::{
     dungeon::TilePos,
-    dungeon_ui::Messages,
     items::{Item, ItemData, ItemList},
     setup::Player,
+    ui::Messages,
 };
 use bevy::{ecs::query::Has, prelude::*};
 
