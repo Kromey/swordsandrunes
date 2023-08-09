@@ -64,6 +64,10 @@ impl Plugin for UIPlugin {
             .add_systems(
                 OnExit(GameUi::Inventory),
                 inventory_ui::destroy_inventory_ui,
+            )
+            .add_systems(
+                Update,
+                inventory_ui::inventory_interaction.run_if(in_state(GameUi::Inventory)),
             );
     }
 }

@@ -8,6 +8,9 @@ const INVENTORY_TILE_SIZE: f32 = 72.0;
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component)]
 pub(super) struct InventoryUi;
 
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component)]
+pub(super) struct InventoryCell;
+
 pub(super) fn build_inventory_ui(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
@@ -92,20 +95,28 @@ fn spawn_item_cell(
         Color::DARK_GRAY.into()
     };
 
-    grid.spawn(NodeBundle {
-        style: Style {
-            width: Val::Px(INVENTORY_TILE_SIZE),
-            height: Val::Px(INVENTORY_TILE_SIZE),
-            border: UiRect::all(Val::Px(3.0)),
-            align_items: AlignItems::Center,
-            justify_content: JustifyContent::Center,
+    let mut cell = grid.spawn((
+        NodeBundle {
+            style: Style {
+                width: Val::Px(INVENTORY_TILE_SIZE),
+                height: Val::Px(INVENTORY_TILE_SIZE),
+                border: UiRect::all(Val::Px(3.0)),
+                align_items: AlignItems::Center,
+                justify_content: JustifyContent::Center,
+                ..Default::default()
+            },
+            border_color: Color::BLACK.into(),
+            background_color,
             ..Default::default()
         },
-        border_color: Color::BLACK.into(),
-        background_color,
-        ..Default::default()
-    })
-    .with_children(|cell| {
+        InventoryCell,
+    ));
+    // If this cell is occupied, make it interactable
+    if item.is_some() {
+        cell.insert(Interaction::default());
+    }
+
+    cell.with_children(|cell| {
         if let Some(item) = item {
             // Place the image first so it lies underneath the text we'll spawn next
             cell.spawn(ImageBundle {
@@ -137,6 +148,22 @@ fn spawn_item_cell(
             });
         }
     });
+}
+
+#[allow(clippy::type_complexity)]
+pub(super) fn inventory_interaction(
+    mut cell_qry: Query<
+        (&Interaction, &mut BorderColor),
+        (Changed<Interaction>, With<InventoryCell>),
+    >,
+) {
+    for (interaction, mut border) in cell_qry.iter_mut() {
+        match *interaction {
+            Interaction::None => *border = Color::BLACK.into(),
+            Interaction::Hovered => *border = Color::YELLOW.into(),
+            Interaction::Pressed => *border = Color::GREEN.into(),
+        }
+    }
 }
 
 pub(super) fn destroy_inventory_ui(
