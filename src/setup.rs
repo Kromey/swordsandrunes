@@ -96,7 +96,7 @@ fn setup_game(
             intelligence: 12,
             perception: 12,
         },
-        Inventory::new(26),
+        Inventory::new(25),
         Player,
     ));
 
