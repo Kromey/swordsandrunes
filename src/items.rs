@@ -1,13 +1,34 @@
-use std::{collections::HashMap, fs::File, io::BufReader};
+use std::{collections::HashMap, fs::File, io::BufReader, ops::Index};
 
 use bevy::prelude::*;
+use itertools::Itertools;
 use serde::Deserialize;
 
 use crate::utils::get_dat_path;
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Component)]
+pub struct ItemId(usize);
+
 #[derive(Debug, Clone, Resource)]
 pub struct ItemList {
-    items: HashMap<String, ItemData>,
+    names: HashMap<String, ItemId>,
+    items: Vec<ItemData>,
+}
+
+impl Index<ItemId> for ItemList {
+    type Output = ItemData;
+
+    fn index(&self, index: ItemId) -> &Self::Output {
+        &self.items[index.0]
+    }
+}
+
+impl Index<&ItemId> for ItemList {
+    type Output = ItemData;
+
+    fn index(&self, index: &ItemId) -> &Self::Output {
+        &self[*index]
+    }
 }
 
 impl ItemList {
@@ -15,22 +36,27 @@ impl ItemList {
         let path = get_dat_path("items.yaml");
         let reader = BufReader::new(File::open(path).unwrap());
 
-        Self {
-            items: serde_yaml::Deserializer::from_reader(reader)
-                .map(|document| {
-                    let item = ItemData::deserialize(document).unwrap();
-                    (item.name.to_lowercase(), item)
-                })
-                .collect(),
-        }
+        let mut items = serde_yaml::Deserializer::from_reader(reader)
+            .map(|document| ItemData::deserialize(document).unwrap())
+            .collect_vec();
+        // Ensure our item list is sorted, which makes our item IDs sortable in the same order
+        items.sort_unstable();
+
+        let names = items
+            .iter()
+            .enumerate()
+            .map(|(i, item)| (item.name.to_lowercase(), ItemId(i)))
+            .collect();
+
+        Self { names, items }
     }
 
-    pub fn get<S: AsRef<str>>(&self, item_name: S) -> &ItemData {
-        self.items.get(&item_name.as_ref().to_lowercase()).unwrap()
+    pub fn get<S: AsRef<str>>(&self, item_name: S) -> ItemId {
+        *self.names.get(&item_name.as_ref().to_lowercase()).unwrap()
     }
 }
 
-#[derive(Debug, Clone, PartialEq, Eq, Component, Deserialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 pub struct ItemData {
     pub name: String,
     #[serde(flatten)]

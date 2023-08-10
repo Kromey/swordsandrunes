@@ -70,9 +70,9 @@ fn setup_game(
                     transform: tile.as_transform(SpriteLayer::Item),
                     ..Default::default()
                 },
-                Name::new(potion.name.clone()),
+                Name::new(item_list[potion].name.clone()),
                 HideOutOfSight::Hide,
-                potion.data,
+                potion,
             ));
         }
     }

@@ -1,7 +1,11 @@
 use bevy::prelude::*;
 use itertools::Itertools;
 
-use crate::{inventory::Inventory, items::ItemData, setup::Player};
+use crate::{
+    inventory::{Inventory, InventoryIdx},
+    items::{ItemId, ItemList},
+    setup::Player,
+};
 
 const INVENTORY_TILE_SIZE: f32 = 72.0;
 
@@ -15,6 +19,7 @@ pub(super) fn build_inventory_ui(
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     player_inventory: Query<&Inventory, With<Player>>,
+    item_list: Res<ItemList>,
 ) {
     let font_handle: Handle<Font> = asset_server.load("fonts/FiraMono-Medium.ttf");
 
@@ -74,10 +79,14 @@ pub(super) fn build_inventory_ui(
                     // Inventory items
                     let inventory = player_inventory
                         .get_single()
-                        .map(|inv| inv.items().iter())
+                        .map(|inv| inv.enumerate().collect_vec())
                         .unwrap_or_default();
-                    for item in inventory.map_into::<Option<_>>().pad_using(25, |_| None) {
-                        spawn_item_cell(grid, item, font_handle.clone(), &asset_server);
+                    for item in inventory
+                        .into_iter()
+                        .map_into::<Option<_>>()
+                        .pad_using(25, |_| None)
+                    {
+                        spawn_item_cell(grid, item, &item_list, font_handle.clone(), &asset_server);
                     }
                 });
         });
@@ -85,7 +94,8 @@ pub(super) fn build_inventory_ui(
 
 fn spawn_item_cell(
     grid: &mut ChildBuilder,
-    item: Option<&ItemData>,
+    item: Option<(InventoryIdx, &ItemId)>,
+    item_list: &ItemList,
     font_handle: Handle<Font>,
     asset_server: &AssetServer,
 ) {
@@ -112,12 +122,12 @@ fn spawn_item_cell(
         InventoryCell,
     ));
     // If this cell is occupied, make it interactable
-    if item.is_some() {
-        cell.insert(Interaction::default());
+    if let Some((idx, _)) = item {
+        cell.insert((Interaction::default(), idx));
     }
 
     cell.with_children(|cell| {
-        if let Some(item) = item {
+        if let Some((_, item)) = item {
             // Place the image first so it lies underneath the text we'll spawn next
             cell.spawn(ImageBundle {
                 image: asset_server
@@ -138,7 +148,7 @@ fn spawn_item_cell(
             })
             .with_children(|container| {
                 container.spawn(TextBundle::from_section(
-                    &item.name,
+                    &item_list[item].name,
                     TextStyle {
                         font: font_handle,
                         font_size: 12.0,
@@ -153,15 +163,18 @@ fn spawn_item_cell(
 #[allow(clippy::type_complexity)]
 pub(super) fn inventory_interaction(
     mut cell_qry: Query<
-        (&Interaction, &mut BorderColor),
+        (&Interaction, &InventoryIdx, &mut BorderColor),
         (Changed<Interaction>, With<InventoryCell>),
     >,
 ) {
-    for (interaction, mut border) in cell_qry.iter_mut() {
+    for (interaction, idx, mut border) in cell_qry.iter_mut() {
         match *interaction {
             Interaction::None => *border = Color::BLACK.into(),
             Interaction::Hovered => *border = Color::YELLOW.into(),
-            Interaction::Pressed => *border = Color::GREEN.into(),
+            Interaction::Pressed => {
+                *border = Color::GREEN.into();
+                info!("{idx:?}");
+            }
         }
     }
 }
