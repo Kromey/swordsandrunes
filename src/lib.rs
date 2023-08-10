@@ -83,6 +83,7 @@ pub fn run() {
             camera::CameraPlugin,
             combat::CombatPlugin,
             dungeon::DungeonPlugin,
+            items::ItemsPlugin,
             ui::UIPlugin,
             input_manager::InputManagerPlugin,
             inventory::InventoryPlugin,

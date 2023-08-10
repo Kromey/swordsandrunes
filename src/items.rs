@@ -63,6 +63,12 @@ pub struct ItemData {
     pub data: Item,
 }
 
+impl ItemData {
+    pub fn is_consumable(&self) -> bool {
+        self.data.is_consumable()
+    }
+}
+
 impl PartialOrd for ItemData {
     fn partial_cmp(&self, other: &Self) -> Option<std::cmp::Ordering> {
         Some(self.cmp(other))
@@ -84,9 +90,29 @@ pub enum Item {
     Armor,
 }
 
+impl Item {
+    pub fn is_consumable(&self) -> bool {
+        matches!(self, Item::Potion { .. } | Item::Scroll { .. })
+    }
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "lowercase")]
 pub enum Effect {
     Heal(u16),
     Harm(u16),
+}
+
+#[derive(Debug, Clone, Copy, Event)]
+pub struct UseItem {
+    pub item: ItemId,
+    pub user: Entity,
+}
+
+pub struct ItemsPlugin;
+
+impl Plugin for ItemsPlugin {
+    fn build(&self, app: &mut App) {
+        app.add_event::<UseItem>();
+    }
 }

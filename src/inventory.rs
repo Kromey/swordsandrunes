@@ -2,7 +2,7 @@ use std::{collections::HashSet, ops::Index};
 
 use crate::{
     dungeon::TilePos,
-    items::{ItemId, ItemList},
+    items::{ItemId, ItemList, UseItem},
     setup::Player,
     ui::Messages,
 };
@@ -25,6 +25,14 @@ impl Index<InventoryIdx> for Inventory {
     }
 }
 
+impl Index<&InventoryIdx> for Inventory {
+    type Output = ItemId;
+
+    fn index(&self, index: &InventoryIdx) -> &Self::Output {
+        &self[*index]
+    }
+}
+
 impl Inventory {
     pub fn new(capacity: usize) -> Self {
         Self {
@@ -35,6 +43,13 @@ impl Inventory {
 
     pub fn get(&self, idx: InventoryIdx) -> Option<&ItemId> {
         self.items.get(idx.0)
+    }
+
+    pub fn find(&self, item_id: ItemId) -> Option<InventoryIdx> {
+        self.items
+            .iter()
+            .position(|item| *item == item_id)
+            .map(InventoryIdx)
     }
 
     pub fn capacity(&self) -> usize {
@@ -74,6 +89,10 @@ impl Inventory {
             true
         }
     }
+
+    pub fn remove(&mut self, idx: InventoryIdx) -> ItemId {
+        self.items.remove(idx.0)
+    }
 }
 
 fn autopickup(
@@ -106,10 +125,26 @@ fn autopickup(
     }
 }
 
+fn consume_item(
+    mut inventory_qry: Query<&mut Inventory>,
+    mut use_item_evts: EventReader<UseItem>,
+    item_list: Res<ItemList>,
+) {
+    for event in use_item_evts.iter() {
+        if item_list[event.item].is_consumable() {
+            if let Ok(mut inventory) = inventory_qry.get_mut(event.user) {
+                if let Some(idx) = inventory.find(event.item) {
+                    inventory.remove(idx);
+                }
+            }
+        }
+    }
+}
+
 pub struct InventoryPlugin;
 
 impl Plugin for InventoryPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Update, autopickup);
+        app.add_systems(Update, (autopickup, consume_item));
     }
 }

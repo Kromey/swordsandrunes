@@ -3,7 +3,7 @@ use itertools::Itertools;
 
 use crate::{
     inventory::{Inventory, InventoryIdx},
-    items::{ItemId, ItemList},
+    items::{ItemId, ItemList, UseItem},
     setup::Player,
 };
 
@@ -162,10 +162,12 @@ fn spawn_item_cell(
 
 #[allow(clippy::type_complexity)]
 pub(super) fn inventory_interaction(
+    player_qry: Query<(Entity, &Inventory), With<Player>>,
     mut cell_qry: Query<
         (&Interaction, &InventoryIdx, &mut BorderColor),
         (Changed<Interaction>, With<InventoryCell>),
     >,
+    mut use_item_evt: EventWriter<UseItem>,
 ) {
     for (interaction, idx, mut border) in cell_qry.iter_mut() {
         match *interaction {
@@ -173,6 +175,11 @@ pub(super) fn inventory_interaction(
             Interaction::Hovered => *border = Color::YELLOW.into(),
             Interaction::Pressed => {
                 *border = Color::GREEN.into();
+                let (player, inventory) = player_qry.get_single().unwrap();
+                use_item_evt.send(UseItem {
+                    item: inventory[idx],
+                    user: player,
+                });
                 info!("{idx:?}");
             }
         }
