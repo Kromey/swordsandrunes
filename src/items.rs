@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use itertools::Itertools;
 use serde::Deserialize;
 
-use crate::utils::get_dat_path;
+use crate::{utils::get_dat_path, combat::HP};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Component)]
 pub struct ItemId(usize);
@@ -109,10 +109,37 @@ pub struct UseItem {
     pub user: Entity,
 }
 
+fn use_item(
+    item_list: Res<ItemList>,
+    mut use_item_evt: EventReader<UseItem>,
+    mut health_qry: Query<&mut HP>,
+) {
+    for event in use_item_evt.iter() {
+        if let Ok(mut hp) = health_qry.get_mut(event.user) {
+            let item = item_list[event.item].data;
+
+            match item {
+                Item::Potion { effect }  => apply_effect(effect, &mut hp),
+                Item::Scroll { effect: _ } => todo!(),
+                Item::Weapon => todo!(),
+                Item::Armor => todo!(),
+            }
+        }
+    }
+}
+
+fn apply_effect(effect: Effect, hp: &mut HP) {
+    match effect {
+        Effect::Heal(heal) => hp.add(heal),
+        Effect::Harm(dmg) => hp.sub(dmg),
+    }
+}
+
 pub struct ItemsPlugin;
 
 impl Plugin for ItemsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_event::<UseItem>();
+        app.add_event::<UseItem>()
+            .add_systems(Update, use_item);
     }
 }
