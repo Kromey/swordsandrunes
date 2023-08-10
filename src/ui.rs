@@ -55,7 +55,7 @@ impl Plugin for UIPlugin {
                     ui_state_manager,
                     dungeon_ui::update_hp,
                     dungeon_ui::update_message_log,
-                    dungeon_ui::update_looking_at,
+                    dungeon_ui::update_looking_at.run_if(in_state(GameUi::Main)),
                 )
                     .run_if(in_state(GameState::Running)),
             )
