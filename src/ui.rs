@@ -4,6 +4,7 @@ mod dungeon_ui;
 mod inventory_ui;
 pub mod messages;
 
+pub use inventory_ui::RedrawInventoryUi;
 pub use messages::Messages;
 
 use crate::{
@@ -43,6 +44,7 @@ impl Plugin for UIPlugin {
     fn build(&self, app: &mut App) {
         app.init_resource::<Messages>()
             .add_state::<GameUi>()
+            .add_event::<RedrawInventoryUi>()
             // === Main Game UI ===
             .add_systems(
                 OnEnter(GameState::Running),
@@ -60,14 +62,18 @@ impl Plugin for UIPlugin {
                     .run_if(in_state(GameState::Running)),
             )
             // == Inventory UI ==
-            .add_systems(OnEnter(GameUi::Inventory), inventory_ui::build_inventory_ui)
+            .add_systems(OnEnter(GameUi::Inventory), inventory_ui::spawn_inventory_ui)
             .add_systems(
                 OnExit(GameUi::Inventory),
                 inventory_ui::destroy_inventory_ui,
             )
             .add_systems(
                 Update,
-                inventory_ui::inventory_interaction.run_if(in_state(GameUi::Inventory)),
+                (
+                    inventory_ui::inventory_interaction,
+                    inventory_ui::build_inventory_ui,
+                )
+                    .run_if(in_state(GameUi::Inventory)),
             );
     }
 }

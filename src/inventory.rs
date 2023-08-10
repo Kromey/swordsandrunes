@@ -4,7 +4,7 @@ use crate::{
     dungeon::TilePos,
     items::{ItemId, ItemList, UseItem},
     setup::Player,
-    ui::Messages,
+    ui::{Messages, RedrawInventoryUi},
 };
 use bevy::{ecs::query::Has, prelude::*};
 
@@ -128,6 +128,7 @@ fn autopickup(
 fn consume_item(
     mut inventory_qry: Query<&mut Inventory>,
     mut use_item_evts: EventReader<UseItem>,
+    mut redraw_evt: EventWriter<RedrawInventoryUi>,
     item_list: Res<ItemList>,
 ) {
     for event in use_item_evts.iter() {
@@ -135,6 +136,7 @@ fn consume_item(
             if let Ok(mut inventory) = inventory_qry.get_mut(event.user) {
                 if let Some(idx) = inventory.find(event.item) {
                     inventory.remove(idx);
+                    redraw_evt.send_default();
                 }
             }
         }

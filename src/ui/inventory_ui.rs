@@ -15,12 +15,32 @@ pub(super) struct InventoryUi;
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component)]
 pub(super) struct InventoryCell;
 
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash, Event)]
+pub struct RedrawInventoryUi;
+
+pub(super) fn spawn_inventory_ui(mut redraw_evt: EventWriter<RedrawInventoryUi>) {
+    redraw_evt.send_default();
+}
+
 pub(super) fn build_inventory_ui(
+    mut redraw_evt: EventReader<RedrawInventoryUi>,
     mut commands: Commands,
     asset_server: Res<AssetServer>,
     player_inventory: Query<&Inventory, With<Player>>,
     item_list: Res<ItemList>,
+    inventory_ui_qry: Query<Entity, With<InventoryUi>>,
 ) {
+    // Check for our redraw event and short-circuit if there isn't one
+    if redraw_evt.is_empty() {
+        return;
+    }
+    redraw_evt.clear();
+
+    // Make sure we start with a clean slate
+    for ui in inventory_ui_qry.iter() {
+        commands.entity(ui).despawn_recursive();
+    }
+
     let font_handle: Handle<Font> = asset_server.load("fonts/FiraMono-Medium.ttf");
 
     commands
@@ -180,7 +200,6 @@ pub(super) fn inventory_interaction(
                     item: inventory[idx],
                     user: player,
                 });
-                info!("{idx:?}");
             }
         }
     }
