@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use itertools::Itertools;
 use serde::Deserialize;
 
-use crate::{combat::HP, utils::get_dat_path};
+use crate::{combat::HP, utils::get_dat_path, TurnState};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Component)]
 pub struct ItemId(usize);
@@ -113,6 +113,7 @@ fn use_item(
     item_list: Res<ItemList>,
     mut use_item_evt: EventReader<UseItem>,
     mut health_qry: Query<&mut HP>,
+    mut next_state: ResMut<NextState<TurnState>>,
 ) {
     for event in use_item_evt.iter() {
         if let Ok(mut hp) = health_qry.get_mut(event.user) {
@@ -125,6 +126,9 @@ fn use_item(
                 Item::Armor => todo!(),
             }
         }
+
+        // TODO: Does using an item *always* advance the turn?
+        next_state.set(TurnState::MonsterTurn);
     }
 }
 
