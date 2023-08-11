@@ -9,7 +9,7 @@ pub use messages::Messages;
 
 use crate::{
     input_manager::{Action, Actions},
-    GameState,
+    GameState, TurnState,
 };
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Hash, States)]
@@ -37,6 +37,10 @@ fn ui_state_manager(
     }
 }
 
+fn reset_ui(mut ui_state: ResMut<NextState<GameUi>>) {
+    ui_state.set(GameUi::Main);
+}
+
 #[derive(Debug)]
 pub struct UIPlugin;
 
@@ -46,6 +50,7 @@ impl Plugin for UIPlugin {
             .add_state::<GameUi>()
             .add_event::<RedrawInventoryUi>()
             // === Main Game UI ===
+            .add_systems(OnExit(TurnState::WaitingForPlayer), reset_ui)
             .add_systems(
                 OnEnter(GameState::Running),
                 (set_initial_ui_state, dungeon_ui::spawn_dungeon_ui),
