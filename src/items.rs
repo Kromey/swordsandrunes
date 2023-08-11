@@ -4,7 +4,7 @@ use bevy::prelude::*;
 use itertools::Itertools;
 use serde::Deserialize;
 
-use crate::{combat::HP, utils::get_dat_path, TurnState};
+use crate::{combat::HP, magic::Effect, utils::get_dat_path, TurnState};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Component)]
 pub struct ItemId(usize);
@@ -96,13 +96,6 @@ impl Item {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
-#[serde(rename_all = "lowercase")]
-pub enum Effect {
-    Heal(u16),
-    Harm(u16),
-}
-
 #[derive(Debug, Clone, Copy, Event)]
 pub struct UseItem {
     pub item: ItemId,
@@ -120,7 +113,7 @@ fn use_item(
             let item = item_list[event.item].data;
 
             match item {
-                Item::Potion { effect } => apply_effect(effect, &mut hp),
+                Item::Potion { effect } => crate::magic::apply_effect(effect, &mut hp),
                 Item::Scroll { effect: _ } => todo!(),
                 Item::Weapon => todo!(),
                 Item::Armor => todo!(),
@@ -129,13 +122,6 @@ fn use_item(
 
         // TODO: Does using an item *always* advance the turn?
         next_state.set(TurnState::MonsterTurn);
-    }
-}
-
-fn apply_effect(effect: Effect, hp: &mut HP) {
-    match effect {
-        Effect::Heal(heal) => hp.add(heal),
-        Effect::Harm(dmg) => hp.sub(dmg),
     }
 }
 

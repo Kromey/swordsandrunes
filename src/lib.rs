@@ -12,6 +12,7 @@ pub mod fieldofview;
 pub mod input_manager;
 pub mod inventory;
 pub mod items;
+pub mod magic;
 pub mod mobs;
 pub mod movement;
 pub mod rand;
