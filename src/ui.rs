@@ -3,6 +3,7 @@ use bevy::prelude::*;
 mod dungeon_ui;
 mod inventory_ui;
 pub mod messages;
+mod spell_target_ui;
 
 pub use inventory_ui::RedrawInventoryUi;
 pub use messages::Messages;
@@ -17,6 +18,7 @@ pub enum GameUi {
     #[default]
     Main,
     Inventory,
+    TargetSpell,
 }
 
 fn set_initial_ui_state(mut ui_state: ResMut<NextState<GameUi>>) {
@@ -39,6 +41,12 @@ fn ui_state_manager(
 
 fn reset_ui(mut ui_state: ResMut<NextState<GameUi>>) {
     ui_state.set(GameUi::Main);
+}
+
+fn destroy_ui<C: Component>(mut commands: Commands, inventory_ui_qry: Query<Entity, With<C>>) {
+    for ui in inventory_ui_qry.iter() {
+        commands.entity(ui).despawn_recursive();
+    }
 }
 
 #[derive(Debug)]
@@ -70,7 +78,7 @@ impl Plugin for UIPlugin {
             .add_systems(OnEnter(GameUi::Inventory), inventory_ui::spawn_inventory_ui)
             .add_systems(
                 OnExit(GameUi::Inventory),
-                inventory_ui::destroy_inventory_ui,
+                destroy_ui::<inventory_ui::InventoryUi>,
             )
             .add_systems(
                 Update,
@@ -79,6 +87,11 @@ impl Plugin for UIPlugin {
                     inventory_ui::build_inventory_ui,
                 )
                     .run_if(in_state(GameUi::Inventory)),
+            )
+            // == Spell Target UI ==
+            .add_systems(
+                OnEnter(GameUi::TargetSpell),
+                spell_target_ui::init_spell_targeting,
             );
     }
 }

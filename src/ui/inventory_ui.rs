@@ -204,12 +204,3 @@ pub(super) fn inventory_interaction(
         }
     }
 }
-
-pub(super) fn destroy_inventory_ui(
-    mut commands: Commands,
-    inventory_ui_qry: Query<Entity, With<InventoryUi>>,
-) {
-    for ui in inventory_ui_qry.iter() {
-        commands.entity(ui).despawn_recursive();
-    }
-}

@@ -4,7 +4,12 @@ use bevy::prelude::*;
 use itertools::Itertools;
 use serde::Deserialize;
 
-use crate::{combat::HP, magic::Effect, utils::get_dat_path, TurnState};
+use crate::{
+    combat::HP,
+    magic::{CastSpell, Effect, Spell},
+    utils::get_dat_path,
+    TurnState,
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Component)]
 pub struct ItemId(usize);
@@ -85,7 +90,7 @@ impl Ord for ItemData {
 #[serde(tag = "type", rename_all = "lowercase")]
 pub enum Item {
     Potion { effect: Effect },
-    Scroll { effect: Effect },
+    Scroll { spell: Spell },
     Weapon,
     Armor,
 }
@@ -105,6 +110,7 @@ pub struct UseItem {
 fn use_item(
     item_list: Res<ItemList>,
     mut use_item_evt: EventReader<UseItem>,
+    mut cast_spell_evt: EventWriter<CastSpell>,
     mut health_qry: Query<&mut HP>,
     mut next_state: ResMut<NextState<TurnState>>,
 ) {
@@ -114,7 +120,10 @@ fn use_item(
 
             match item {
                 Item::Potion { effect } => crate::magic::apply_effect(effect, &mut hp),
-                Item::Scroll { effect: _ } => todo!(),
+                Item::Scroll { spell } => cast_spell_evt.send(CastSpell {
+                    caster: event.user,
+                    spell,
+                }),
                 Item::Weapon => todo!(),
                 Item::Armor => todo!(),
             }

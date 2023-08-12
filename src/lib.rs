@@ -85,12 +85,13 @@ pub fn run() {
             combat::CombatPlugin,
             dungeon::DungeonPlugin,
             items::ItemsPlugin,
-            ui::UIPlugin,
             input_manager::InputManagerPlugin,
             inventory::InventoryPlugin,
+            magic::MagicPlugin,
             mobs::MobsPlugin,
             movement::MovementPlugin,
             setup::SetupPlugin,
+            ui::UIPlugin,
         ))
         .run();
 }

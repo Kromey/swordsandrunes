@@ -13,3 +13,11 @@ name: Poison
 type: potion
 effect:
   harm: 8
+---
+name: Scroll of Lightning
+type: scroll
+spell:
+  target: single
+  range: 5
+  effect:
+    harm: 20
