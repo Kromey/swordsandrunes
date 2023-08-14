@@ -6,7 +6,6 @@ use crate::{
     dungeon::{Map, TilePos, TILE_SIZE_F32},
     fieldofview::FieldOfView,
     magic::{CastSpellOn, SpellTarget, SpellToCast},
-    setup::Player,
 };
 
 use super::GameUi;
@@ -21,7 +20,7 @@ pub(super) struct SingleTarget(Entity);
 pub(super) fn init_spell_targeting(
     commands: Commands,
     camera_qry: Query<(&Camera, &GlobalTransform), With<PrimaryCamera>>,
-    targets_qry: Query<(Entity, &Transform), (With<HP>, Without<Player>)>,
+    targets_qry: Query<(Entity, &Transform), With<HP>>,
     tile_fov_qry: Query<&FieldOfView>,
     map: Res<Map>,
     mut ui_state: ResMut<NextState<GameUi>>,
@@ -30,9 +29,15 @@ pub(super) fn init_spell_targeting(
     if let Some(spell) = spell.0 {
         match spell.spell.target {
             SpellTarget::Caster => ui_state.set(GameUi::Main),
-            SpellTarget::Single => {
-                init_single_target_select(commands, camera_qry, targets_qry, tile_fov_qry, map)
-            }
+            SpellTarget::Single => init_single_target_select(
+                spell.caster,
+                commands,
+                camera_qry,
+                targets_qry,
+                tile_fov_qry,
+                spell.spell.range,
+                map,
+            ),
             SpellTarget::Area(_) => todo!(),
         }
     } else {
@@ -42,16 +47,32 @@ pub(super) fn init_spell_targeting(
 
 #[allow(clippy::type_complexity)]
 fn init_single_target_select(
+    caster: Entity,
     mut commands: Commands,
     camera_qry: Query<(&Camera, &GlobalTransform), With<PrimaryCamera>>,
-    targets_qry: Query<(Entity, &Transform), (With<HP>, Without<Player>)>,
+    targets_qry: Query<(Entity, &Transform), With<HP>>,
     tile_fov_qry: Query<&FieldOfView>,
+    range: u8,
     map: Res<Map>,
 ) {
     let (camera, camera_transform) = camera_qry.get_single().unwrap();
 
+    let (_, from) = targets_qry.get(caster).unwrap();
+    let from_tile = TilePos::from(from);
+    let range = u32::from(range);
+
     for (target, target_pos) in targets_qry.iter() {
+        if target == caster {
+            // Don't target yourself
+            continue;
+        }
+
         let tile = TilePos::from(target_pos);
+        if from_tile.distance(tile) > range {
+            // Out of range, don't target this one
+            continue;
+        }
+
         if map
             .get(tile)
             .and_then(|e| tile_fov_qry.get(e).ok())
