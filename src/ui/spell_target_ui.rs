@@ -5,7 +5,7 @@ use crate::{
     combat::HP,
     dungeon::{Map, TilePos, TILE_SIZE_F32},
     fieldofview::FieldOfView,
-    magic::{CastSpellOn, SpellTarget, SpellToCast},
+    magic::{CastSpell, CastSpellOn, SpellTarget, SpellToCast},
 };
 
 use super::GameUi;
@@ -16,53 +16,38 @@ pub(super) struct SpellTargetUi;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Component)]
 pub(super) struct SingleTarget(Entity);
 
-#[allow(clippy::type_complexity)]
-pub(super) fn init_spell_targeting(
-    commands: Commands,
-    camera_qry: Query<(&Camera, &GlobalTransform), With<PrimaryCamera>>,
-    targets_qry: Query<(Entity, &Transform), With<HP>>,
-    tile_fov_qry: Query<&FieldOfView>,
-    map: Res<Map>,
-    mut ui_state: ResMut<NextState<GameUi>>,
-    spell: Res<SpellToCast>,
-) {
-    if let Some(spell) = spell.0 {
-        match spell.spell.target {
-            SpellTarget::Caster => ui_state.set(GameUi::Main),
-            SpellTarget::Single => init_single_target_select(
-                spell.caster,
-                commands,
-                camera_qry,
-                targets_qry,
-                tile_fov_qry,
-                spell.spell.range,
-                map,
-            ),
+pub(super) fn init_spell_targeting(world: &mut World) {
+    if let Some(casting) = world.resource::<SpellToCast>().0 {
+        match casting.spell.target {
+            SpellTarget::Caster => world.resource_mut::<NextState<GameUi>>().set(GameUi::Main),
+            SpellTarget::Single => init_single_target_select(casting, world),
             SpellTarget::Area(_) => todo!(),
         }
     } else {
-        ui_state.set(GameUi::Main);
+        world.resource_mut::<NextState<GameUi>>().set(GameUi::Main);
     }
 }
 
-#[allow(clippy::type_complexity)]
-fn init_single_target_select(
-    caster: Entity,
-    mut commands: Commands,
-    camera_qry: Query<(&Camera, &GlobalTransform), With<PrimaryCamera>>,
-    targets_qry: Query<(Entity, &Transform), With<HP>>,
-    tile_fov_qry: Query<&FieldOfView>,
-    range: u8,
-    map: Res<Map>,
-) {
-    let (camera, camera_transform) = camera_qry.get_single().unwrap();
+fn init_single_target_select(casting: CastSpell, world: &mut World) {
+    let (camera, &camera_transform) = world
+        .query_filtered::<(&Camera, &GlobalTransform), With<PrimaryCamera>>()
+        .get_single(world)
+        .unwrap();
+    // Hacky way to get around borrow checker if we keep the reference instead
+    // Consider rewriting this to use SystemState
+    let camera = camera.clone();
 
-    let (_, from) = targets_qry.get(caster).unwrap();
+    let from = world.get::<Transform>(casting.caster).unwrap();
     let from_tile = TilePos::from(from);
-    let range = u32::from(range);
+    let range = u32::from(casting.spell.range);
 
-    for (target, target_pos) in targets_qry.iter() {
-        if target == caster {
+    let mut targets = Vec::new();
+
+    for (target, target_pos) in world
+        .query_filtered::<(Entity, &Transform), With<HP>>()
+        .iter(world)
+    {
+        if target == casting.caster {
             // Don't target yourself
             continue;
         }
@@ -73,35 +58,40 @@ fn init_single_target_select(
             continue;
         }
 
-        if map
+        if world
+            .resource::<Map>()
             .get(tile)
-            .and_then(|e| tile_fov_qry.get(e).ok())
+            .and_then(|e| world.get::<FieldOfView>(e))
             .is_some_and(|fov| *fov == FieldOfView::Visible)
         {
             let world_pos = tile.as_vec() + Vec2::new(-TILE_SIZE_F32 / 2.0, TILE_SIZE_F32 / 2.0);
             if let Some(screen_pos) =
-                camera.world_to_viewport(camera_transform, world_pos.extend(0.0))
+                camera.world_to_viewport(&camera_transform, world_pos.extend(0.0))
             {
-                commands.spawn((
-                    NodeBundle {
-                        style: Style {
-                            width: Val::Px(TILE_SIZE_F32),
-                            height: Val::Px(TILE_SIZE_F32),
-                            position_type: PositionType::Absolute,
-                            top: Val::Px(screen_pos.y),
-                            left: Val::Px(screen_pos.x),
-                            border: UiRect::all(Val::Px(1.0)),
-                            ..Default::default()
-                        },
-                        border_color: Color::ALICE_BLUE.into(),
-                        ..Default::default()
-                    },
-                    Interaction::default(),
-                    SpellTargetUi,
-                    SingleTarget(target),
-                ));
+                targets.push((target, screen_pos));
             }
         }
+    }
+
+    for (target, screen_pos) in targets {
+        world.spawn((
+            NodeBundle {
+                style: Style {
+                    width: Val::Px(TILE_SIZE_F32),
+                    height: Val::Px(TILE_SIZE_F32),
+                    position_type: PositionType::Absolute,
+                    top: Val::Px(screen_pos.y),
+                    left: Val::Px(screen_pos.x),
+                    border: UiRect::all(Val::Px(1.0)),
+                    ..Default::default()
+                },
+                border_color: Color::ALICE_BLUE.into(),
+                ..Default::default()
+            },
+            Interaction::default(),
+            SpellTargetUi,
+            SingleTarget(target),
+        ));
     }
 }
 
