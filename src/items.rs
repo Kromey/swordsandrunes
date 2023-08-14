@@ -115,9 +115,9 @@ fn use_item(
     mut next_state: ResMut<NextState<TurnState>>,
 ) {
     for event in use_item_evt.iter() {
-        if let Ok(mut hp) = health_qry.get_mut(event.user) {
-            let item = item_list[event.item].data;
+        let item = item_list[event.item].data;
 
+        if let Ok(mut hp) = health_qry.get_mut(event.user) {
             match item {
                 Item::Potion { effect } => crate::magic::apply_effect(effect, &mut hp),
                 Item::Scroll { spell } => cast_spell_evt.send(CastSpell {
@@ -129,8 +129,9 @@ fn use_item(
             }
         }
 
-        // TODO: Does using an item *always* advance the turn?
-        next_state.set(TurnState::MonsterTurn);
+        if !matches!(item, Item::Scroll { .. }) {
+            next_state.set(TurnState::MonsterTurn);
+        }
     }
 }
 
