@@ -26,12 +26,39 @@ pub struct CastSpell {
     pub spell: Spell,
 }
 
+impl CastSpell {
+    pub fn on(&self, target: Entity) -> CastSpellOn {
+        let Self { caster, spell } = *self;
+
+        CastSpellOn {
+            caster,
+            target,
+            spell,
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Event)]
+pub struct CastSpellOn {
+    pub caster: Entity,
+    pub target: Entity,
+    pub spell: Spell,
+}
+
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Resource)]
 pub struct SpellToCast(pub Option<CastSpell>);
 
 impl SpellToCast {
     pub fn set(&mut self, spell: CastSpell) {
         self.0 = Some(spell);
+    }
+
+    pub fn on(&self, target: Entity) -> CastSpellOn {
+        self.0.unwrap().on(target)
+    }
+
+    pub fn clear(&mut self) {
+        self.0 = None
     }
 }
 
@@ -53,5 +80,24 @@ pub(super) fn cast_spell(
             }
             SpellTarget::Area(_) => todo!(),
         }
+    }
+}
+
+pub(super) fn cast_spell_on(
+    mut cast_spell_on_evt: EventReader<CastSpellOn>,
+    mut health_qry: Query<&mut HP>,
+    mut spell_to_cast: ResMut<SpellToCast>,
+) {
+    for cast in cast_spell_on_evt.iter() {
+        match cast.spell.target {
+            SpellTarget::Caster | SpellTarget::Area(_) => unreachable!(),
+            SpellTarget::Single => {
+                if let Ok(mut hp) = health_qry.get_mut(cast.target) {
+                    apply_effect(cast.spell.effect, &mut hp);
+                }
+            }
+        }
+
+        spell_to_cast.clear();
     }
 }

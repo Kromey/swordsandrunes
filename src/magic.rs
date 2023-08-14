@@ -3,7 +3,7 @@ use bevy::prelude::*;
 use serde::Deserialize;
 
 mod spells;
-pub use spells::{CastSpell, Spell, SpellTarget, SpellToCast};
+pub use spells::{CastSpell, CastSpellOn, Spell, SpellTarget, SpellToCast};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "lowercase")]
@@ -24,7 +24,8 @@ pub struct MagicPlugin;
 impl Plugin for MagicPlugin {
     fn build(&self, app: &mut App) {
         app.add_event::<CastSpell>()
+            .add_event::<CastSpellOn>()
             .init_resource::<SpellToCast>()
-            .add_systems(Update, spells::cast_spell);
+            .add_systems(Update, (spells::cast_spell, spells::cast_spell_on));
     }
 }

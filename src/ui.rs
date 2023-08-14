@@ -92,6 +92,14 @@ impl Plugin for UIPlugin {
             .add_systems(
                 OnEnter(GameUi::TargetSpell),
                 spell_target_ui::init_spell_targeting,
+            )
+            .add_systems(
+                OnExit(GameUi::TargetSpell),
+                destroy_ui::<spell_target_ui::SpellTargetUi>,
+            )
+            .add_systems(
+                Update,
+                spell_target_ui::update_single_target_select.run_if(in_state(GameUi::TargetSpell)),
             );
     }
 }
