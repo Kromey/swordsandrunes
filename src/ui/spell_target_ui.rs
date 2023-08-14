@@ -41,11 +41,11 @@ fn init_single_target_select(
 ) {
     for target in targets_qry.iter() {
         let tile = TilePos::from(target);
-        if map.get(tile).is_some_and(|e| {
-            tile_fov_qry
-                .get(e)
-                .is_ok_and(|fov| *fov == FieldOfView::Visible)
-        }) {
+        if map
+            .get(tile)
+            .and_then(|e| tile_fov_qry.get(e).ok())
+            .is_some_and(|fov| *fov == FieldOfView::Visible)
+        {
             info!("Init target at {tile:?}");
         }
     }
