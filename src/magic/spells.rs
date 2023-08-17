@@ -64,20 +64,19 @@ impl SpellToCast {
 
 pub(super) fn cast_spell(
     mut cast_spell_evt: EventReader<CastSpell>,
+    mut cast_spell_on_evt: EventWriter<CastSpellOn>,
     mut ui_state: ResMut<NextState<GameUi>>,
-    mut health_qry: Query<&mut HP>,
     mut spell_to_cast: ResMut<SpellToCast>,
 ) {
     for cast in cast_spell_evt.iter() {
         match cast.spell.target {
             SpellTarget::Caster => {
-                let mut hp = health_qry.get_mut(cast.caster).unwrap();
-                apply_effect(cast.spell.effect, &mut hp);
+                cast_spell_on_evt.send(cast.on(cast.caster));
             }
             SpellTarget::Single | SpellTarget::Area(_) => {
                 spell_to_cast.set(*cast);
                 ui_state.set(GameUi::TargetSpell);
-            } // SpellTarget::Area(_) => todo!(),
+            }
         }
     }
 }
@@ -88,13 +87,8 @@ pub(super) fn cast_spell_on(
     mut spell_to_cast: ResMut<SpellToCast>,
 ) {
     for cast in cast_spell_on_evt.iter() {
-        match cast.spell.target {
-            SpellTarget::Caster | SpellTarget::Area(_) => unreachable!(),
-            SpellTarget::Single => {
-                if let Ok(mut hp) = health_qry.get_mut(cast.target) {
-                    apply_effect(cast.spell.effect, &mut hp);
-                }
-            }
+        if let Ok(mut hp) = health_qry.get_mut(cast.target) {
+            apply_effect(cast.spell.effect, &mut hp);
         }
 
         spell_to_cast.clear();
