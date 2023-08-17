@@ -1,4 +1,4 @@
-use super::TILE_SIZE;
+use super::{TILE_SIZE, TILE_SIZE_F32};
 use crate::{dungeon::MapSize, utils::SpriteLayer};
 use bevy::prelude::*;
 use std::cmp::max;
@@ -18,6 +18,11 @@ impl TilePos {
     /// Chebyshev distance from this position to another
     pub fn distance(&self, other: TilePos) -> u32 {
         max(self.x.abs_diff(other.x), self.y.abs_diff(other.y))
+    }
+
+    /// Corner of the tile in world coordinates, useful to e.g. place UI elements over the tile
+    pub fn corner(&self) -> Vec2 {
+        self.as_vec() + Vec2::new(-TILE_SIZE_F32 / 2.0, TILE_SIZE_F32 / 2.0)
     }
 
     pub fn from_index(idx: usize, size: MapSize) -> Self {
@@ -70,8 +75,8 @@ impl From<&Vec3> for TilePos {
 impl From<Vec2> for TilePos {
     fn from(value: Vec2) -> Self {
         Self {
-            x: (value.x / TILE_SIZE as f32).round() as u32,
-            y: (value.y / TILE_SIZE as f32).round() as u32,
+            x: (value.x / TILE_SIZE_F32).round() as u32,
+            y: (value.y / TILE_SIZE_F32).round() as u32,
         }
     }
 }

@@ -80,11 +80,28 @@ fn setup_game(
     // === Spawn Scrolls ===
     let scroll = item_list.get("Scroll of Lightning");
     for room in map.iter_rooms() {
-        let n = rng.gen_range(4..=5).clamp(3, 5) - 3; // 0-3 = 0; 4-5 = 1-2
+        let n = rng.gen_range(0..=5).clamp(3, 5) - 3; // 0-3 = 0; 4-5 = 1-2
         for tile in room.iter().choose_multiple(&mut rng, n) {
             commands.spawn((
                 SpriteBundle {
                     texture: asset_server.load("sprites/items/scrolls/scroll-purple.png"),
+                    transform: tile.as_transform(SpriteLayer::Item),
+                    ..Default::default()
+                },
+                Name::new(item_list[scroll].name.clone()),
+                HideOutOfSight::Hide,
+                scroll,
+            ));
+        }
+    }
+
+    let scroll = item_list.get("Scroll of Fireball");
+    for room in map.iter_rooms() {
+        let n = rng.gen_range(3..=5).clamp(3, 5) - 3; // 0-3 = 0; 4-5 = 1-2
+        for tile in room.iter().choose_multiple(&mut rng, n) {
+            commands.spawn((
+                SpriteBundle {
+                    texture: asset_server.load("sprites/items/scrolls/scroll-red.png"),
                     transform: tile.as_transform(SpriteLayer::Item),
                     ..Default::default()
                 },

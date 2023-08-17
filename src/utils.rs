@@ -16,6 +16,7 @@ pub enum SpriteLayer {
     Decoration,
     Item,
     Actor,
+    UI,
 }
 
 impl SpriteLayer {

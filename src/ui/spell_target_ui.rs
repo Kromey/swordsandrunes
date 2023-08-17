@@ -1,11 +1,15 @@
+use std::collections::HashSet;
+
 use bevy::prelude::*;
+use itertools::Itertools;
 
 use crate::{
     camera::PrimaryCamera,
     combat::HP,
-    dungeon::{Map, TilePos, TILE_SIZE_F32},
-    fieldofview::FieldOfView,
+    dungeon::{BlocksMovement, BlocksSight, Map, TilePos, TILE_SIZE_F32},
+    fieldofview::{compute_limited_fov, FieldOfView},
     magic::{CastSpell, CastSpellOn, SpellTarget, SpellToCast},
+    utils::SpriteLayer,
 };
 
 use super::GameUi;
@@ -16,16 +20,29 @@ pub(super) struct SpellTargetUi;
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Component)]
 pub(super) struct SingleTarget(Entity);
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Component)]
+pub(super) struct TargetArea(i32);
+
 pub(super) fn init_spell_targeting(world: &mut World) {
     if let Some(casting) = world.resource::<SpellToCast>().0 {
         match casting.spell.target {
             SpellTarget::Caster => world.resource_mut::<NextState<GameUi>>().set(GameUi::Main),
             SpellTarget::Single => init_single_target_select(casting, world),
-            SpellTarget::Area(_) => todo!(),
+            SpellTarget::Area(radius) => init_area_target_select(casting, radius, world),
         }
     } else {
         world.resource_mut::<NextState<GameUi>>().set(GameUi::Main);
     }
+}
+
+fn init_area_target_select(casting: CastSpell, radius: u8, world: &mut World) {
+    let from = world.get::<Transform>(casting.caster).unwrap();
+    let from_tile = TilePos::from(from);
+
+    world.spawn((
+        SpatialBundle::from_transform(from_tile.as_transform(SpriteLayer::UI)),
+        TargetArea(radius as i32),
+    ));
 }
 
 fn init_single_target_select(casting: CastSpell, world: &mut World) {
@@ -64,7 +81,7 @@ fn init_single_target_select(casting: CastSpell, world: &mut World) {
             .and_then(|e| world.get::<FieldOfView>(e))
             .is_some_and(|fov| *fov == FieldOfView::Visible)
         {
-            let world_pos = tile.as_vec() + Vec2::new(-TILE_SIZE_F32 / 2.0, TILE_SIZE_F32 / 2.0);
+            let world_pos = tile.corner();
             if let Some(screen_pos) =
                 camera.world_to_viewport(&camera_transform, world_pos.extend(0.0))
             {
@@ -115,6 +132,79 @@ pub(super) fn update_single_target_select(
             }
             Interaction::Hovered => *border = Color::GREEN.into(),
             Interaction::None => *border = Color::ALICE_BLUE.into(),
+        }
+    }
+}
+
+pub(super) fn update_area_target_select(
+    camera_qry: Query<(&Camera, &GlobalTransform), With<PrimaryCamera>>,
+    mut commands: Commands,
+    mut cursor_evt: EventReader<CursorMoved>,
+    blocks_sight_qry: Query<&Transform, With<BlocksSight>>,
+    mut target_src: Query<(Entity, &TargetArea, &mut Transform), Without<BlocksSight>>,
+    map: Res<Map>,
+    targetable_tile: Query<&FieldOfView, Without<BlocksMovement>>,
+) {
+    if let Ok((target, target_area, mut target_transform)) = target_src.get_single_mut() {
+        if let Some(cursor) = cursor_evt.iter().last() {
+            let (camera, camera_transform) = camera_qry.get_single().unwrap();
+            if let Some(cursor_pos) = camera.viewport_to_world_2d(camera_transform, cursor.position)
+            {
+                let target_tile = TilePos::from(cursor_pos);
+
+                if target_tile == TilePos::from(*target_transform) {
+                    // Cursor hasn't left the currently targeted tile
+                    return;
+                }
+
+                *target_transform = target_tile.as_transform(SpriteLayer::UI);
+                commands.entity(target).despawn_descendants();
+
+                if map
+                    .get(target_tile)
+                    .and_then(|tile_entity| targetable_tile.get(tile_entity).ok())
+                    .map(|fov| *fov != FieldOfView::Visible)
+                    .unwrap_or(true)
+                {
+                    // No FoV if the target itself isn't visible
+                    return;
+                }
+
+                let blockers: HashSet<_> = blocks_sight_qry
+                    .iter()
+                    .map(|transform| TilePos::from(*transform))
+                    .collect();
+
+                let area = compute_limited_fov(target_tile, target_area.0, |tile| {
+                    blockers.contains(&tile)
+                });
+                let target_origin = target_tile.as_vec();
+
+                commands.entity(target).with_children(|parent| {
+                    area.into_iter()
+                        .sorted_by_cached_key(|tile| (tile.x, tile.y))
+                        .dedup()
+                        .filter(|tile| {
+                            targetable_tile
+                                .get(map.get(*tile).unwrap())
+                                .is_ok_and(|fov| *fov == FieldOfView::Visible)
+                        })
+                        .for_each(|tile| {
+                            let relative_translation = tile.as_vec() - target_origin;
+                            parent.spawn(SpriteBundle {
+                                transform: Transform::from_translation(
+                                    relative_translation.extend(-0.1),
+                                ),
+                                sprite: Sprite {
+                                    color: Color::GREEN.with_a(0.15),
+                                    custom_size: Some(Vec2::splat(TILE_SIZE_F32)),
+                                    ..Default::default()
+                                },
+                                ..Default::default()
+                            });
+                        });
+                });
+            }
         }
     }
 }

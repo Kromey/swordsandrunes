@@ -21,3 +21,12 @@ spell:
   range: 5
   effect:
     harm: 20
+---
+name: Scroll of Fireball
+type: scroll
+spell:
+  target:
+    area: 3
+  range: 20
+  effect:
+    harm: 12

@@ -99,7 +99,11 @@ impl Plugin for UIPlugin {
             )
             .add_systems(
                 Update,
-                spell_target_ui::update_single_target_select.run_if(in_state(GameUi::TargetSpell)),
+                (
+                    spell_target_ui::update_single_target_select,
+                    spell_target_ui::update_area_target_select,
+                )
+                    .run_if(in_state(GameUi::TargetSpell)),
             );
     }
 }

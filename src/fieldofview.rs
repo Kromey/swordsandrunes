@@ -9,6 +9,7 @@ use bevy::prelude::*;
 use std::collections::HashSet;
 
 mod shadowcasting;
+pub use shadowcasting::{compute_fov, compute_limited_fov};
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq, Component)]
 pub enum FieldOfView {

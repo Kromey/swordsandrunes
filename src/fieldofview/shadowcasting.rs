@@ -16,7 +16,26 @@ where
     visible
 }
 
-pub(crate) fn scan<F, G>(row: Row, quadrant: Quadrant, is_blocking: &mut F, mark_visible: &mut G)
+pub fn compute_limited_fov<F>(origin: TilePos, range: i32, mut is_blocking: F) -> Vec<TilePos>
+where
+    F: FnMut(TilePos) -> bool,
+{
+    let mut visible = vec![origin];
+
+    for i in 0..4 {
+        let quadrant = Quadrant::from_index(i, origin);
+        scan(
+            Row::first().with_max_depth(range),
+            quadrant,
+            &mut is_blocking,
+            &mut |pos| visible.push(pos),
+        );
+    }
+
+    visible
+}
+
+fn scan<F, G>(row: Row, quadrant: Quadrant, is_blocking: &mut F, mark_visible: &mut G)
 where
     F: FnMut(TilePos) -> bool,
     G: FnMut(TilePos),
@@ -51,13 +70,13 @@ where
 }
 
 #[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
-pub(crate) struct Pos {
-    pub(crate) row: i32,
-    pub(crate) col: i32,
+struct Pos {
+    row: i32,
+    col: i32,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub(crate) enum Quadrant {
+enum Quadrant {
     North(TilePos),
     East(TilePos),
     South(TilePos),
@@ -65,7 +84,7 @@ pub(crate) enum Quadrant {
 }
 
 impl Quadrant {
-    pub(crate) fn from_index(index: u32, origin: TilePos) -> Self {
+    fn from_index(index: u32, origin: TilePos) -> Self {
         match index {
             0 => Self::North(origin),
             1 => Self::East(origin),
@@ -75,7 +94,7 @@ impl Quadrant {
         }
     }
 
-    pub(crate) fn transform(&self, tile: Pos) -> TilePos {
+    fn transform(&self, tile: Pos) -> TilePos {
         let (x, y) = match self {
             Quadrant::North(origin) => (origin.x as i32 + tile.col, origin.y as i32 - tile.row),
             Quadrant::South(origin) => (origin.x as i32 + tile.col, origin.y as i32 + tile.row),
@@ -88,32 +107,48 @@ impl Quadrant {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub(crate) struct Row {
-    pub(crate) depth: i32,
-    pub(crate) start_slope: f64,
-    pub(crate) end_slope: f64,
+struct Row {
+    depth: i32,
+    max_depth: Option<i32>,
+    start_slope: f64,
+    end_slope: f64,
 }
 
 impl Row {
-    pub(crate) fn first() -> Self {
+    fn first() -> Self {
         Self {
             depth: 1,
+            max_depth: None,
             start_slope: -1.0,
             end_slope: 1.0,
         }
     }
 
-    pub(crate) fn tiles(&self) -> impl Iterator<Item = Pos> + '_ {
+    fn with_max_depth(mut self, depth: i32) -> Self {
+        self.max_depth = Some(depth);
+        self
+    }
+
+    fn tiles(&self) -> impl Iterator<Item = Pos> + '_ {
         let min_col = round_ties_down(self.depth as f64 * self.start_slope);
         let max_col = round_ties_up(self.depth as f64 * self.end_slope);
 
-        (min_col..=max_col).map(|col| Pos {
+        let iter = (min_col..=max_col).map(|col| Pos {
             row: self.depth,
             col,
-        })
+        });
+
+        if self
+            .max_depth
+            .is_some_and(|max_depth| self.depth > max_depth)
+        {
+            iter.take(0)
+        } else {
+            iter.take(usize::MAX)
+        }
     }
 
-    pub(crate) fn next(&self) -> Row {
+    fn next(&self) -> Row {
         Row {
             depth: self.depth + 1,
             ..*self
@@ -121,19 +156,19 @@ impl Row {
     }
 }
 
-pub(crate) fn slope(tile: Pos) -> f64 {
+fn slope(tile: Pos) -> f64 {
     (2 * tile.col - 1) as f64 / (2 * tile.row) as f64
 }
 
-pub(crate) fn is_symmetric(row: Row, tile: Pos) -> bool {
+fn is_symmetric(row: Row, tile: Pos) -> bool {
     tile.col as f64 >= (row.depth as f64 * row.start_slope)
         && tile.col as f64 <= (row.depth as f64 * row.end_slope)
 }
 
-pub(crate) fn round_ties_up(n: f64) -> i32 {
+fn round_ties_up(n: f64) -> i32 {
     (n + 0.5) as i32
 }
 
-pub(crate) fn round_ties_down(n: f64) -> i32 {
+fn round_ties_down(n: f64) -> i32 {
     (n - 0.5).ceil() as i32
 }

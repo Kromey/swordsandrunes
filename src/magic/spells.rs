@@ -74,11 +74,10 @@ pub(super) fn cast_spell(
                 let mut hp = health_qry.get_mut(cast.caster).unwrap();
                 apply_effect(cast.spell.effect, &mut hp);
             }
-            SpellTarget::Single => {
+            SpellTarget::Single | SpellTarget::Area(_) => {
                 spell_to_cast.set(*cast);
                 ui_state.set(GameUi::TargetSpell);
-            }
-            SpellTarget::Area(_) => todo!(),
+            } // SpellTarget::Area(_) => todo!(),
         }
     }
 }
