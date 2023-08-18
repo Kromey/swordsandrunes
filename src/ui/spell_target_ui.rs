@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use bevy::prelude::*;
+use bevy::{prelude::*, window::PrimaryWindow};
 use itertools::Itertools;
 
 use crate::{
@@ -41,6 +41,7 @@ fn init_area_target_select(casting: CastSpell, radius: u8, world: &mut World) {
 
     world.spawn((
         SpatialBundle::from_transform(from_tile.as_transform(SpriteLayer::UI)),
+        SpellTargetUi,
         TargetArea(radius as i32),
     ));
 }
@@ -204,6 +205,54 @@ pub(super) fn update_area_target_select(
                             });
                         });
                 });
+            }
+        }
+    }
+}
+
+#[allow(clippy::too_many_arguments)]
+pub(super) fn fire_area_target_spell(
+    buttons: Res<Input<MouseButton>>,
+    window_qry: Query<&Window, With<PrimaryWindow>>,
+    camera_qry: Query<(&Camera, &GlobalTransform), With<PrimaryCamera>>,
+    blocks_sight_qry: Query<&Transform, With<BlocksSight>>,
+    spell: Res<SpellToCast>,
+    targetable_qry: Query<(Entity, &Transform), With<HP>>,
+    mut spell_evt: EventWriter<CastSpellOn>,
+    mut ui_state: ResMut<NextState<GameUi>>,
+) {
+    if buttons.just_pressed(MouseButton::Left) {
+        if let Some(spell) = spell.0 {
+            let spell_area = match spell.spell.target {
+                SpellTarget::Caster | SpellTarget::Single => return,
+                SpellTarget::Area(area) => area,
+            };
+            if let Some(cursor_position) = window_qry.single().cursor_position() {
+                let (camera, camera_transform) = camera_qry.get_single().unwrap();
+                if let Some(cursor_pos) =
+                    camera.viewport_to_world_2d(camera_transform, cursor_position)
+                {
+                    let spell_tile = TilePos::from(cursor_pos);
+                    let blockers: HashSet<_> = blocks_sight_qry
+                        .iter()
+                        .map(|transform| TilePos::from(*transform))
+                        .collect();
+                    let area: HashSet<_> =
+                        compute_limited_fov(spell_tile, spell_area as i32, |tile| {
+                            blockers.contains(&tile)
+                        })
+                        .into_iter()
+                        .collect();
+
+                    for (target, target_transform) in targetable_qry.iter() {
+                        let target_tile = TilePos::from(target_transform);
+                        if area.contains(&target_tile) {
+                            spell_evt.send(spell.on(target));
+                        }
+                    }
+
+                    ui_state.set(GameUi::Main);
+                }
             }
         }
     }

@@ -102,6 +102,7 @@ impl Plugin for UIPlugin {
                 (
                     spell_target_ui::update_single_target_select,
                     spell_target_ui::update_area_target_select,
+                    spell_target_ui::fire_area_target_spell,
                 )
                     .run_if(in_state(GameUi::TargetSpell)),
             );
